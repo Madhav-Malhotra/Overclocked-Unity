@@ -13,6 +13,9 @@ public class Table : Interactable
     [Header("UI References")]
     [SerializeField] private TimerSelectionUI timerSelectionUI;
 
+    [Header("CPU")]
+    [SerializeField] private CPUController cpuController;
+
     private DiskHoldingSystem holdingSystem;
     private TableProcessingTimer activeTimer;
     private bool isProcessing = false;
@@ -89,9 +92,11 @@ public class Table : Interactable
 
         if (HasDisk)
         {
-            // Pickup flow - UNCHANGED
+            // Pickup flow 
             Disk diskToPickup = RemoveDisk();
             holdingSystem.PickUpDisk(diskToPickup);
+
+            cpuController.GetALUOutput();
         }
         else
         {
@@ -177,6 +182,8 @@ public class Table : Interactable
 
         currentDisk = disk;
         disk.SetParentTable(this);
+
+        cpuController.TickCPU();
     }
 
     public Disk RemoveDisk()
