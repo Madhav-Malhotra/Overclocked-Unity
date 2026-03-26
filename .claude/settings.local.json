@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__unity-mcp__Unity_ReadConsole",
+      "mcp__unity-mcp__Unity_FindProjectAssets",
+      "mcp__unity-mcp__Unity_ManageScene",
+      "mcp__unity-mcp__Unity_ManageGameObject",
+      "mcp__unity-mcp__Unity_ManageAsset",
+      "mcp__unity-mcp__Unity_RunCommand",
+      "mcp__unity-mcp__Unity_SceneView_CaptureMultiAngleSceneView",
+      "mcp__unity-mcp__Unity_GetProjectData",
+      "mcp__unity-mcp__Unity_GetConsoleLogs",
+      "mcp__unity-mcp__Unity_AssetGeneration_ConvertToMaterial",
+      "mcp__unity-mcp__Unity_ImportExternalModel",
+      "mcp__unity-mcp__Unity_ListResources",
+      "mcp__unity-mcp__Unity_ManageScript",
+      "mcp__unity-mcp__Unity_ValidateScript",
+      "mcp__unity-mcp__Unity_ScriptApplyEdits"
+    ]
+  }
+}

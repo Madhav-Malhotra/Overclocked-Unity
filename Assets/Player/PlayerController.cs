@@ -22,7 +22,7 @@ public class PlayerController : MonoBehaviour
         StopMovement();
     }
 
-    void Update()
+void Update()
     {
         inputValue = Keyboard.current != null
         ? new Vector2(

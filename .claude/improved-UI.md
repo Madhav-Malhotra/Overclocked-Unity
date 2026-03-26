@@ -48,7 +48,7 @@ Each station represents one functional unit of a 5-stage pipeline. The player wa
 ### Rodin AI Generation Strategy
 
 For all component models and the pedestal, preface every prompt with:
-> "Game-ready 3D model, low-poly, cartoon/stylized aesthetic matching Overcooked or Job Simulator. Bold colors, chunky forms, clearly readable silhouette. Single mesh, single texture atlas. No fine details that won't read at game distance."
+> "Game-ready 3D model, low-poly, cartoon/stylized aesthetic matching Overcooked. Bold colors, chunky forms, clearly readable silhouette. Single mesh, single texture atlas. No fine details like text that won't read at game distance. Plain white background."
 
 Then append the component-specific or pedestal description below.
 
@@ -59,7 +59,7 @@ Then append the component-specific or pedestal description below.
 This is the only interactive object at each station. It is a short pedestal with a flat glowing top surface where the instruction brick sits while being processed.
 
 **Prompt addition:**
-> "A short, chunky pedestal with a flat top platform. The top surface glows with a soft white light, like a scanner bed or data reader. The body is a rounded rectangular column. Has a small status LED ring around the base of the platform. Looks like a futuristic item scanner or check-in terminal. Color: white/light grey with cyan accent lighting."
+> "A short, chunky pedestal with a flat top platform. The top surface glows with a soft white light, like a scanner bed or data reader. The body is a rounded rectangular column. Looks like a futuristic item scanner or check-in terminal. Color: white/light grey with cyan accent lighting."
 
 Generate **one** model. It will be reused at every station. Import it as `Assets/Interactables/Models/ScannerPedestal/` and create a prefab at `Assets/Interactables/Prefabs/ScannerPedestal.prefab`. This prefab is the object that carries the `Table` (or `CPUStation`) component and contains the `diskSlot` child transform on its top surface.
 
@@ -89,7 +89,7 @@ Generate **one** model. It will be reused at every station. Import it as `Assets
 ### Step 2.4 — ALU (Arithmetic Logic Unit)
 
 **Prompt addition:**
-> "A chunky mechanical calculator (but without the many keys) diamond-shaped cross-section. Has a large stylized math symbol (+ or ×) embossed prominently on the front face. Looks mechanical and industrial, with chunky rivets or bolts. Purely decorative — no functional slots or openings needed. Color: red with yellow accents."
+> "A futuristic calculator (but just a small cyan LED without numbers and three keys with plus, minus, and multiply signs). Purely decorative — no functional numbers, keys, or other details needed. Color: dark grey with cyan accents."
 
 ---
 
@@ -117,7 +117,7 @@ Generate **one** model. It will be reused at every station. Import it as `Assets
 ### Step 2.8 — Demultiplexer (Demux)
 
 **Prompt addition:**
-> "A trapezoidal prism shape — narrow at the back, widening to a broader front face, the inverse of a mux wedge. Has decorative groove lines fanning outward from the narrow back to the wide front, suggesting a signal splitting. A small selector dial or switch sits on top. Purely decorative — grooves are surface detail only, not actual slots. Color: warm orange with black accents."
+> "A 3D multiplexer created with a 2D trapezoid being extruded to have height. Has three lines fanning from the wide face to the narrow face, like a signal merging. A small selector dial or switch sits on top. Purely decorative. Color: dark grey with cyan accents."
 
 ---
 

@@ -55,3 +55,63 @@ All gameplay scripts are plain C# `MonoBehaviour` classes — no custom base cla
 - `.unity`, `.prefab`, and `.asset` files use Unity YAML Merge (`unityyamlmerge`) — avoid manual text-editor merges on these files.
 - Binary assets (textures, audio, models) are tracked via Git LFS.
 - The `Library/` folder is local Unity cache and is gitignored — it is rebuilt on first open after cloning.
+
+## Unity MCP Tools
+
+A Unity MCP server is connected and available. Prefer MCP tools over manual file edits for anything that touches the live Unity Editor state. Key tools and when to use them:
+
+| Tool | Use for |
+|---|---|
+| `Unity_ManageScript` | Read, create, or overwrite C# script files |
+| `Unity_CreateScript` / `Unity_DeleteScript` | Create/delete scripts via the Editor (ensures `.meta` files are created) |
+| `Unity_ValidateScript` | Check a script compiles before applying — always run this before `Unity_ManageScript` writes |
+| `Unity_ScriptApplyEdits` / `Unity_ApplyTextEdits` | Apply targeted diffs to scripts |
+| `Unity_ManageGameObject` | Add/remove/configure GameObjects and their components in a scene |
+| `Unity_ManageScene` | Open, save, or query the active scene |
+| `Unity_ManageAsset` | Create, move, or delete assets (respects `.meta` files) |
+| `Unity_FindProjectAssets` | Search the Project for assets by name or type |
+| `Unity_GetConsoleLogs` / `Unity_ReadConsole` | Read Unity Editor console for errors/warnings after a change |
+| `Unity_Camera_Capture` / `Unity_SceneView_Capture2DScene` | Take a screenshot of Game or Scene view to visually verify a change |
+| `Unity_ManageEditor` | Enter/exit Play mode, trigger recompilation |
+| `Unity_RunCommand` | Run arbitrary Unity Editor menu commands |
+| `Unity_FindInFile` | Search file contents without leaving Unity context |
+
+**Important constraints:**
+- `Unity_CreateScript` creates an empty file with a `.meta` — then use `Unity_ManageScript` to write the content. Do not create `.cs` files with the `Write` tool if the Editor is open, as this can cause `.meta` desync.
+- Always call `Unity_ValidateScript` before writing a script that touches existing MonoBehaviour fields; a compile error can break Enter Play Mode for all scripts.
+- After any structural scene change (adding/removing components, changing serialized references), save the scene explicitly with `Unity_ManageScene` or `Unity_RunCommand` → `File/Save`.
+
+## Implementation Loop
+
+When making changes that could break existing behaviour, follow this loop. The `/implement` skill (`sk-implement`) codifies this as a runnable workflow.
+
+### Step 1 — Plan
+
+1. Read all scripts and scene state that the change touches (`Unity_ManageScript`, `Unity_FindProjectAssets`, `Unity_ManageScene`).
+2. Write out a concise, numbered plan of every change to be made (files, components, scene wiring).
+3. **Present the plan to the user and wait for explicit confirmation before writing a single line of code.**
+   - Flag any step that removes or renames a serialized field (this breaks prefab/scene references silently).
+   - Flag any step that changes a public API used by other scripts.
+
+### Step 2 — Implement
+
+- Apply changes one logical unit at a time (one script or one scene change), not all at once.
+- For script changes: `Unity_ValidateScript` → if clean, apply with `Unity_ScriptApplyEdits` or `Unity_ManageScript`.
+- For scene/prefab wiring: use `Unity_ManageGameObject` rather than hand-editing YAML.
+- If a step requires an action only possible inside the Unity Editor UI (e.g. baking NavMesh, configuring a RenderFeature asset via Inspector sliders), **stop and ask the user** to perform that step, then confirm when done before continuing.
+
+### Step 3 — Verify
+
+After each logical unit of change:
+
+1. `Unity_GetConsoleLogs` — confirm zero new errors or warnings introduced by the change.
+2. `Unity_ManageEditor` → Enter Play Mode → `Unity_Camera_Capture` or `Unity_SceneView_Capture2DScene` — visually confirm the intended behaviour.
+3. Exit Play Mode. If the console has new errors, **fix before moving to the next change**. Do not accumulate broken state.
+
+### Step 4 — Continue or summarise
+
+- If more changes remain in the plan, return to Step 2.
+- When all changes are done, summarise to the user:
+  - What was changed and why.
+  - Any remaining manual steps the user must do in the Editor.
+  - Any non-obvious risks or follow-up tasks flagged during implementation.
