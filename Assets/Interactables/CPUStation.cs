@@ -1,15 +1,27 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.Serialization;
 
 public class CPUStation : Table
 {
     [Header("CPU Stage")]
     [SerializeField] private PipelineStage assignedStage = PipelineStage.Unprocessed;
 
+    [Header("Processing Settings")]
+    [SerializeField] private bool requiresProcessing = true;
+    [SerializeField] private GameObject processingTimerPrefab;
+
+    [Header("UI References")]
+    [SerializeField] private TimerSelectionUI timerSelectionUI;
+
+    [Header("CPU")]
+    [SerializeField] private CPUController cpuController;
+
     [Header("Outline")]
     [SerializeField] private Color interactableOutlineColor = Color.white;
-    [SerializeField] private Color processingOutlineColor = Color.red;
+    [FormerlySerializedAs("processingOutlineColor")]
+    [SerializeField] private Color blockedOutlineColor = Color.red;
     [SerializeField] private float outlineWidth = 2f;
 
     private const string OutlineMaskShaderName = "Overclocked/CPUStationOutlineMask";
@@ -21,6 +33,14 @@ public class CPUStation : Table
     private Material outlineMaskMaterial;
     private MaterialPropertyBlock outlinePropertyBlock;
     private bool isOutlineVisible;
+    private TableProcessingTimer activeTimer;
+    private bool isProcessing;
+    private float processingEndTime = -1f;
+
+    private bool IsProcessing => isProcessing;
+    private bool RequiresProcessing => requiresProcessing;
+    private TimerSelectionUI TimerSelectionUI => timerSelectionUI;
+    private CPUController CpuController => cpuController;
 
     protected override void Start()
     {
@@ -28,6 +48,16 @@ public class CPUStation : Table
         EnsureOutlineMaterial();
         SyncOutlineRenderers();
         ApplyOutlineVisibility(false);
+
+        if (timerSelectionUI == null)
+        {
+            timerSelectionUI = FindFirstObjectByType<TimerSelectionUI>();
+        }
+    }
+
+    void Update()
+    {
+        UpdateProcessing();
     }
 
     void OnEnable()
@@ -48,7 +78,7 @@ public class CPUStation : Table
         }
 
         SyncOutlineRenderers();
-        ApplyOutlineColor(IsProcessing ? processingOutlineColor : interactableOutlineColor);
+        ApplyOutlineColor(GetOutlineColor());
         Shader.SetGlobalFloat("_CPUStationOutlineThickness", outlineWidth);
 
         if (CurrentBrick != null)
@@ -81,6 +111,22 @@ public class CPUStation : Table
         return true;
     }
 
+    public override bool CanInteract()
+    {
+        if (!base.CanInteract())
+        {
+            return false;
+        }
+
+        // Picking up a placed brick is always allowed when the station is otherwise interactable.
+        if (HasBrick)
+        {
+            return true;
+        }
+
+        return !IsInvalidPlacementForHeldBrick();
+    }
+
     public override void SetHighlighted(bool highlighted)
     {
         if (objectRenderer != null && objectRenderer.material.HasProperty("_EmissionColor"))
@@ -102,13 +148,91 @@ public class CPUStation : Table
             return;
         }
 
-        ApplyOutlineColor(IsProcessing ? processingOutlineColor : interactableOutlineColor);
+        ApplyOutlineColor(GetOutlineColor());
         Shader.SetGlobalFloat("_CPUStationOutlineThickness", outlineWidth);
     }
 
-    protected override void OnProcessingComplete()
+    public override void OnInteract()
     {
-        base.OnProcessingComplete();
+        if (HoldingSystem == null)
+        {
+            return;
+        }
+
+        if (HasBrick)
+        {
+            InstructionBrick brickToPickup = RemoveBrick();
+            HoldingSystem.PickUpBrick(brickToPickup);
+            CpuController?.GetALUOutput();
+            return;
+        }
+
+        if (!RequiresProcessing)
+        {
+            if (!TryPlaceHeldBrick())
+            {
+                Debug.LogWarning("CPUStation: Failed to place brick");
+            }
+            return;
+        }
+
+        if (TimerSelectionUI != null)
+        {
+            TimerSelectionUI.ShowPopup(OnTimerSelected);
+        }
+        else
+        {
+            Debug.LogError("CPUStation: TimerSelectionUI not found");
+            OnTimerSelected(3f);
+        }
+    }
+
+    public override void PlaceBrick(InstructionBrick brick)
+    {
+        base.PlaceBrick(brick);
+        CpuController?.TickCPU();
+    }
+
+    private void StartProcessing(float duration)
+    {
+        isProcessing = true;
+        processingEndTime = Time.time + Mathf.Max(0f, duration);
+
+        if (processingTimerPrefab != null)
+        {
+            GameObject timerObj = Instantiate(processingTimerPrefab, transform);
+            activeTimer = timerObj.GetComponent<TableProcessingTimer>();
+
+            if (activeTimer != null)
+            {
+                activeTimer.Initialize(duration, transform);
+            }
+            else
+            {
+                Debug.LogWarning("CPUStation: processingTimerPrefab is missing TableProcessingTimer component");
+            }
+        }
+        else
+        {
+            Debug.LogWarning("CPUStation: processingTimerPrefab is not assigned. Processing will continue without UI.");
+        }
+    }
+
+    private void OnProcessingComplete()
+    {
+        if (!isProcessing)
+        {
+            return;
+        }
+
+        isProcessing = false;
+        processingEndTime = -1f;
+
+        if (activeTimer != null)
+        {
+            Destroy(activeTimer.gameObject);
+            activeTimer = null;
+        }
 
         if (!RequiresProcessing || assignedStage == PipelineStage.Unprocessed)
         {
@@ -118,6 +242,14 @@ public class CPUStation : Table
         if (CurrentBrick != null)
         {
             CurrentBrick.SetStage(assignedStage);
+        }
+    }
+
+    private void UpdateProcessing()
+    {
+        if (isProcessing && Time.time >= processingEndTime)
+        {
+            OnProcessingComplete();
         }
     }
 
@@ -370,5 +502,57 @@ public class CPUStation : Table
 
             cmd.DrawRenderer(outlineRenderer, outlineMaskMaterial);
         }
+    }
+
+    private Color GetOutlineColor()
+    {
+        return IsProcessing || IsInvalidPlacementForHeldBrick()
+            ? blockedOutlineColor
+            : interactableOutlineColor;
+    }
+
+    private bool IsInvalidPlacementForHeldBrick()
+    {
+        if (HoldingSystem == null || !HoldingSystem.IsHoldingBrick() || HasBrick)
+        {
+            return false;
+        }
+
+        if (assignedStage == PipelineStage.Unprocessed)
+        {
+            return false;
+        }
+
+        InstructionBrick heldBrick = HoldingSystem.GetHeldBrick();
+        if (heldBrick == null)
+        {
+            return false;
+        }
+
+        return heldBrick.CurrentStage != GetRequiredInputStage(assignedStage);
+    }
+
+    private static PipelineStage GetRequiredInputStage(PipelineStage outputStage)
+    {
+        return outputStage switch
+        {
+            PipelineStage.Fetch => PipelineStage.Unprocessed,
+            PipelineStage.Decode => PipelineStage.Fetch,
+            PipelineStage.Execute => PipelineStage.Decode,
+            PipelineStage.Memory => PipelineStage.Execute,
+            PipelineStage.Writeback => PipelineStage.Memory,
+            _ => PipelineStage.Unprocessed
+        };
+    }
+
+    private void OnTimerSelected(float duration)
+    {
+        if (!TryPlaceHeldBrick())
+        {
+            Debug.LogWarning("CPUStation: Failed to place brick, skipping processing start");
+            return;
+        }
+
+        StartProcessing(duration);
     }
 }
