@@ -30,6 +30,12 @@ public class Table : Interactable
         {
             Debug.LogWarning("Table: brickSlot not assigned");
         }
+
+        // Initialise any brick already placed on this table in the scene (e.g. Start station).
+        if (currentBrick != null)
+        {
+            currentBrick.SetParentTable(this);
+        }
     }
 
     public override bool CanBeHighlighted()

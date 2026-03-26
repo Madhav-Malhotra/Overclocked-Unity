@@ -15,7 +15,8 @@
       "mcp__unity-mcp__Unity_ListResources",
       "mcp__unity-mcp__Unity_ManageScript",
       "mcp__unity-mcp__Unity_ValidateScript",
-      "mcp__unity-mcp__Unity_ScriptApplyEdits"
+      "mcp__unity-mcp__Unity_ScriptApplyEdits",
+      "mcp__unity-mcp__Unity_Camera_Capture"
     ]
   }
 }

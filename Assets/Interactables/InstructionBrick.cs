@@ -12,11 +12,19 @@ public class InstructionBrick : Interactable
     [SerializeField] private Material[] stageMaterials = Array.Empty<Material>();
     [SerializeField] private PipelineStage currentStage = PipelineStage.Unprocessed;
 
+    [Header("Bob Settings")]
+    [SerializeField] private float bobAmplitude  = 0.18f;
+    [SerializeField] private float bobFrequency  = 1.2f;
+    [SerializeField] private float bobBaseHeight = 0.25f;
+
     private Table parentTable;
+    private bool  _isPlaced;
+    private float _bobPhase;
+
     private Collider brickCollider;
     private Vector3 originalScale;
 
-    protected override void Start()
+protected override void Start()
     {
         if (brickRenderer == null)
         {
@@ -27,6 +35,21 @@ public class InstructionBrick : Interactable
         brickCollider = GetComponent<Collider>();
         originalScale = transform.localScale;
         ApplyStageMaterials(currentStage);
+
+        // If already sitting on a table (e.g. the Start station in the scene),
+        // initialise the bob and rotation as if it was just placed.
+        if (parentTable != null)
+        {
+            SetParentTable(parentTable);
+        }
+    }
+
+private void Update()
+    {
+        if (!_isPlaced) return;
+        _bobPhase += Time.deltaTime * bobFrequency * Mathf.PI * 2f;
+        float yOffset = Mathf.Sin(_bobPhase) * bobAmplitude;
+        transform.localPosition = new Vector3(0f, bobBaseHeight + yOffset, 0f);
     }
 
     public PipelineStage CurrentStage => currentStage;
@@ -63,9 +86,25 @@ public class InstructionBrick : Interactable
         }
     }
 
-    public void SetParentTable(Table table)
+public void SetParentTable(Table table)
     {
         parentTable = table;
+        _isPlaced = (table != null);
+
+        if (_isPlaced)
+        {
+            _bobPhase = 0f;
+            transform.localRotation = Quaternion.Euler(0f, 45f, 0f);
+            transform.localPosition = new Vector3(0f, bobBaseHeight, 0f);
+            // Keep kinematic while bobbing so physics doesn't fight the animation
+            Rigidbody rb = GetComponent<Rigidbody>();
+            if (rb != null) rb.isKinematic = true;
+        }
+        else
+        {
+            transform.localRotation = Quaternion.identity;
+            transform.localPosition = Vector3.zero;
+        }
     }
 
     public Table GetParentTable()
