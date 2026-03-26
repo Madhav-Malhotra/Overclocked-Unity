@@ -11,10 +11,11 @@ GameObject:
   - component: {fileID: 6959619481380457189}
   - component: {fileID: 2636319862518829145}
   - component: {fileID: 4264014346160845526}
-  - component: {fileID: 5810643116189130869}
   - component: {fileID: 1506300503985906843}
+  - component: {fileID: 8299589273980342678}
+  - component: {fileID: -5481915921930279623}
   m_Layer: 0
-  m_Name: Disk
+  m_Name: InstructionBrick
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -30,7 +31,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.8, y: 0.1, z: 0.8}
+  m_LocalScale: {x: 0.8, y: 0.2, z: 0.6}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -42,7 +43,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2268273500964561539}
-  m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
+  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!23 &4264014346160845526
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -92,8 +93,33 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!136 &5810643116189130869
-CapsuleCollider:
+--- !u!114 &1506300503985906843
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2268273500964561539}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e2e990f5970d4a7295a08b37ae220c5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Disk
+  highlightIntersity: 0.3
+  brickRenderer: {fileID: 4264014346160845526}
+  stageMaterialSlots: 
+  binaryMaterialSlot: -1
+  binaryFaceMaterial: {fileID: 2100000, guid: 5f32e685fc2b343ebb46213ebafb049e, type: 2}
+  stageMaterials:
+  - {fileID: 2100000, guid: 5f32e685fc2b343ebb46213ebafb049e, type: 2}
+  - {fileID: 2100000, guid: c6c3d6c6b2e444ba0b930fb97a846b8b, type: 2}
+  - {fileID: 2100000, guid: dd55806245e8d49709bd9b5011550fc1, type: 2}
+  - {fileID: 2100000, guid: 991119d98a9dc435db57df40f932b7f2, type: 2}
+  - {fileID: 2100000, guid: 05b80339b68994c43be6332fa6b42b37, type: 2}
+  - {fileID: 2100000, guid: 3535154d8441248589510b1a490e2979, type: 2}
+  currentStage: 0
+--- !u!65 &8299589273980342678
+BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -110,27 +136,33 @@ CapsuleCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.5000001
-  m_Height: 2
-  m_Direction: 1
-  m_Center: {x: 0.000000059604645, y: 0, z: -0.00000008940697}
---- !u!114 &1506300503985906843
-MonoBehaviour:
+  serializedVersion: 3
+  m_Size: {x: 1, y: 0.99999994, z: 0.99999994}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!54 &-5481915921930279623
+Rigidbody:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2268273500964561539}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1e2e990f5970d4a7295a08b37ae220c5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Disk
-  highlightIntersity: 0.3
-  brickRenderer: {fileID: 0}
-  stageMaterialSlots: 
-  binaryMaterialSlot: -1
-  binaryFaceMaterial: {fileID: 0}
-  stageMaterials: []
-  currentStage: 0
+  serializedVersion: 5
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0

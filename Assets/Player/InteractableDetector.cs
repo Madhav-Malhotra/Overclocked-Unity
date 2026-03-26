@@ -9,14 +9,14 @@ public class InteractableDetector : MonoBehaviour
     [Range(0f, 1f)]
     public float detectionAngle = 0.3f;
     private Interactable currentHighlighted;
-    private DiskHoldingSystem holdingSystem;
+    private InstructionBrickHoldingSystem holdingSystem;
 
     void Start()
     {
-        holdingSystem = GetComponent<DiskHoldingSystem>();
+        holdingSystem = GetComponent<InstructionBrickHoldingSystem>();
         if (holdingSystem == null)
         {
-            Debug.LogWarning("InteractableDetector: DiskHoldingSystem not found on player");
+            Debug.LogWarning("InteractableDetector: InstructionBrickHoldingSystem not found on player");
         }
     }
 

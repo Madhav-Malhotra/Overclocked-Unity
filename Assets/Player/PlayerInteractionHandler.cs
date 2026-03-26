@@ -5,7 +5,7 @@ public class PlayerInteractionHandler : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] private InteractableDetector detector;
-    [SerializeField] private DiskHoldingSystem holdingSystem;
+    [SerializeField] private InstructionBrickHoldingSystem holdingSystem;
     [SerializeField] private InteractionUIManager uiManager;
 
     private InputAction interactAction;
@@ -17,7 +17,7 @@ public class PlayerInteractionHandler : MonoBehaviour
             detector = GetComponent<InteractableDetector>();
 
         if (holdingSystem == null)
-            holdingSystem = GetComponent<DiskHoldingSystem>();
+            holdingSystem = GetComponent<InstructionBrickHoldingSystem>();
 
         // Set up input action reference
         // Note: Assumes InputSystem_Actions asset has C# class generation enabled
@@ -77,7 +77,7 @@ public class PlayerInteractionHandler : MonoBehaviour
 
         if (canInteract)
         {
-            bool isHolding = holdingSystem.IsHoldingDisk();
+            bool isHolding = holdingSystem.IsHoldingBrick();
             uiManager.UpdatePrompt(isHolding, true);
         }
         else
