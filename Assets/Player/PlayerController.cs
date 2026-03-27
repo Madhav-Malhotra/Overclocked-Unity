@@ -57,13 +57,14 @@ void Update()
         }
     }
 
-    void FixedUpdate()
+void FixedUpdate()
     {
-        rb.linearVelocity = new Vector3(
+        Vector3 targetVelocity = new Vector3(
             moveDirection.x * moveSpeed,
             rb.linearVelocity.y,
             moveDirection.z * moveSpeed
         );
+        rb.linearVelocity = Vector3.Lerp(rb.linearVelocity, targetVelocity, 10f * Time.fixedDeltaTime);
     }
 
     public void StopMovement()
@@ -80,4 +81,7 @@ void Update()
             rb.angularVelocity = Vector3.zero;
         }
     }
+
+public bool IsMoving => moveDirection.magnitude > 0.1f;
+
 }
