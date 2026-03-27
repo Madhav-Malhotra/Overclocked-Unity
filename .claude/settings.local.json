@@ -16,7 +16,9 @@
       "mcp__unity-mcp__Unity_ManageScript",
       "mcp__unity-mcp__Unity_ValidateScript",
       "mcp__unity-mcp__Unity_ScriptApplyEdits",
-      "mcp__unity-mcp__Unity_Camera_Capture"
+      "mcp__unity-mcp__Unity_Camera_Capture",
+      "mcp__unity-mcp__Unity_CreateScript",
+      "mcp__unity-mcp__Unity_ManageEditor"
     ]
   }
 }

@@ -1,0 +1,111 @@
+using UnityEngine;
+using System.Collections.Generic;
+
+/// <summary>
+/// Renders a circuit-board-style trace between two world-space points.
+/// The path uses 45-degree diagonal segments (like PCB traces).
+/// The line pulses with a cyan glow using URP emission.
+/// </summary>
+[RequireComponent(typeof(LineRenderer))]
+public class CircuitTrace : MonoBehaviour
+{
+    public float lineWidth = 0.28f;
+    public float pulseSpeed = 1.5f;
+    public float pulseMinIntensity = 0.6f;
+    public float pulseMaxIntensity = 2.5f;
+
+    private Vector3 _startPoint;
+    private Vector3 _endPoint;
+    private LineRenderer _lineRenderer;
+    private Material _material;
+
+    private static readonly Color CyanBase = new Color(0f, 1f, 1f, 1f);
+
+    public void Setup(Vector3 from, Vector3 to)
+    {
+        _startPoint = from;
+        _endPoint = to;
+        if (_lineRenderer == null)
+            _lineRenderer = GetComponent<LineRenderer>();
+        if (_material == null)
+            BuildMaterial();
+        BuildPath();
+    }
+
+    private void Awake()
+    {
+        _lineRenderer = GetComponent<LineRenderer>();
+        BuildMaterial();
+    }
+
+    private void BuildMaterial()
+    {
+        Shader urpUnlit = Shader.Find("Universal Render Pipeline/Unlit");
+        if (urpUnlit == null)
+            urpUnlit = Shader.Find("Unlit/Color");
+
+        _material = new Material(urpUnlit);
+        _material.SetColor("_BaseColor", CyanBase);
+        _material.EnableKeyword("_EMISSION");
+        _material.SetColor("_EmissionColor", CyanBase * pulseMinIntensity);
+
+        _lineRenderer.material = _material;
+        _lineRenderer.startWidth = lineWidth;
+        _lineRenderer.endWidth = lineWidth;
+        _lineRenderer.numCornerVertices = 4;
+        _lineRenderer.numCapVertices = 4;
+        _lineRenderer.useWorldSpace = true;
+        _lineRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+        _lineRenderer.receiveShadows = false;
+    }
+
+    private void BuildPath()
+    {
+        List<Vector3> points = ComputeCircuitPath(_startPoint, _endPoint);
+        _lineRenderer.positionCount = points.Count;
+        _lineRenderer.SetPositions(points.ToArray());
+    }
+
+    /// <summary>
+    /// PCB-style path: straight run on the longer axis, then a 45-degree diagonal,
+    /// then straight run on the shorter axis to the destination.
+    /// </summary>
+    private static List<Vector3> ComputeCircuitPath(Vector3 from, Vector3 to)
+    {
+        float y = from.y;
+        float dx = to.x - from.x;
+        float dz = to.z - from.z;
+        float diag = Mathf.Min(Mathf.Abs(dx), Mathf.Abs(dz));
+
+        var pts = new List<Vector3>();
+        pts.Add(from);
+
+        if (Mathf.Abs(dx) >= Mathf.Abs(dz))
+        {
+            float signX = Mathf.Sign(dx);
+            float signZ = Mathf.Sign(dz);
+            pts.Add(new Vector3(from.x + (dx - signX * diag), y, from.z));
+            pts.Add(new Vector3(to.x, y, from.z + signZ * diag));
+        }
+        else
+        {
+            float signX = Mathf.Sign(dx);
+            float signZ = Mathf.Sign(dz);
+            pts.Add(new Vector3(from.x, y, from.z + (dz - signZ * diag)));
+            pts.Add(new Vector3(from.x + signX * diag, y, to.z));
+        }
+
+        pts.Add(to);
+        return pts;
+    }
+
+    private void Update()
+    {
+        if (_material == null) return;
+        float t = (Mathf.Sin(Time.time * pulseSpeed) + 1f) * 0.5f;
+        float intensity = Mathf.Lerp(pulseMinIntensity, pulseMaxIntensity, t);
+        Color emissive = CyanBase * intensity;
+        _material.SetColor("_BaseColor", emissive);
+        _material.SetColor("_EmissionColor", emissive);
+    }
+}
