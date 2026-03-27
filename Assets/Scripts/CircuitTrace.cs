@@ -14,42 +14,45 @@ public class CircuitTrace : MonoBehaviour
     public float pulseMinIntensity = 0.6f;
     public float pulseMaxIntensity = 2.5f;
 
+    // Assigned by CircuitTraceSpawner — must be a project asset so the shader is included in builds
+    public Material traceMaterial;
+
     private Vector3 _startPoint;
     private Vector3 _endPoint;
     private LineRenderer _lineRenderer;
-    private Material _material;
+    private Material _instanceMaterial;
 
     private static readonly Color CyanBase = new Color(0f, 1f, 1f, 1f);
 
-    public void Setup(Vector3 from, Vector3 to)
+public void Setup(Vector3 from, Vector3 to)
     {
         _startPoint = from;
         _endPoint = to;
         if (_lineRenderer == null)
             _lineRenderer = GetComponent<LineRenderer>();
-        if (_material == null)
-            BuildMaterial();
+        BuildMaterial();
         BuildPath();
     }
 
-    private void Awake()
+private void Awake()
     {
         _lineRenderer = GetComponent<LineRenderer>();
-        BuildMaterial();
+        // BuildMaterial is called by Setup() after traceMaterial is assigned by the spawner
     }
 
     private void BuildMaterial()
     {
-        Shader urpUnlit = Shader.Find("Universal Render Pipeline/Unlit");
-        if (urpUnlit == null)
-            urpUnlit = Shader.Find("Unlit/Color");
+        if (traceMaterial == null)
+        {
+            Debug.LogError("[CircuitTrace] traceMaterial is not assigned. Assign a URP/Unlit material asset.");
+            return;
+        }
 
-        _material = new Material(urpUnlit);
-        _material.SetColor("_BaseColor", CyanBase);
-        _material.EnableKeyword("_EMISSION");
-        _material.SetColor("_EmissionColor", CyanBase * pulseMinIntensity);
+        // Instance the material so each trace can have its own emission value
+        _instanceMaterial = new Material(traceMaterial);
+        _instanceMaterial.SetColor("_BaseColor", CyanBase);
 
-        _lineRenderer.material = _material;
+        _lineRenderer.material = _instanceMaterial;
         _lineRenderer.startWidth = lineWidth;
         _lineRenderer.endWidth = lineWidth;
         _lineRenderer.numCornerVertices = 4;
@@ -66,10 +69,6 @@ public class CircuitTrace : MonoBehaviour
         _lineRenderer.SetPositions(points.ToArray());
     }
 
-    /// <summary>
-    /// PCB-style path: straight run on the longer axis, then a 45-degree diagonal,
-    /// then straight run on the shorter axis to the destination.
-    /// </summary>
     private static List<Vector3> ComputeCircuitPath(Vector3 from, Vector3 to)
     {
         float y = from.y;
@@ -99,13 +98,14 @@ public class CircuitTrace : MonoBehaviour
         return pts;
     }
 
-    private void Update()
+private void Update()
     {
-        if (_material == null) return;
+        if (_instanceMaterial == null) return;
+        // Sin gives a smooth wave; pow biases toward dark so bright peak looks symmetric
         float t = (Mathf.Sin(Time.time * pulseSpeed) + 1f) * 0.5f;
+        t = Mathf.Pow(t, 3f);
         float intensity = Mathf.Lerp(pulseMinIntensity, pulseMaxIntensity, t);
         Color emissive = CyanBase * intensity;
-        _material.SetColor("_BaseColor", emissive);
-        _material.SetColor("_EmissionColor", emissive);
+        _instanceMaterial.SetColor("_BaseColor", emissive);
     }
 }
