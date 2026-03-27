@@ -43,7 +43,7 @@ GameObject:
   - component: {fileID: 5023325495590063471}
   - component: {fileID: 8619492800892300352}
   - component: {fileID: 4289453265188353390}
-  - component: {fileID: 3140435793404076649}
+  - component: {fileID: 1296622477252290142}
   m_Layer: 0
   m_Name: Table
   m_TagString: Untagged
@@ -145,7 +145,7 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &3140435793404076649
+--- !u!114 &1296622477252290142
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -154,12 +154,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 7976094410582224280}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bdde3fc7269f54c73a02914b12b8217e, type: 3}
+  m_Script: {fileID: 11500000, guid: 295ff3bc814a440883417dcf881af286, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Table
+  m_EditorClassIdentifier: Assembly-CSharp::CPUStation
   highlightIntersity: 0.3
-  currentDisk: {fileID: 0}
-  diskSlot: {fileID: 1114359729211915560}
-  processingTimerPrefab: {fileID: 4251564737280518575, guid: f429dace11ec1429998fdd6027068b23, type: 3}
+  currentBrick: {fileID: 0}
+  brickSlot: {fileID: 0}
+  processingTimerPrefab: {fileID: 0}
   processingHighlightColor: {r: 1, g: 0.3, b: 0, a: 1}
   timerSelectionUI: {fileID: 0}
+  cpuController: {fileID: 0}
+  assignedStage: 0

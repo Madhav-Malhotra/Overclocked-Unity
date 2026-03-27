@@ -7,9 +7,15 @@ public class PlayerController : MonoBehaviour
     public float moveSpeed = 5f;
     public float rotationSpeed = 10f;
 
+    [Header("Bob Settings")]
+    [SerializeField] private Transform playerModel;
+    [SerializeField] private float bobAmplitude = 0.08f;
+    [SerializeField] private float bobFrequency = 1.8f;
+
     private Rigidbody rb;
     private Vector2 inputValue;
     private Vector3 moveDirection;
+    private float _bobPhase;
 
     void Start()
     {
@@ -22,7 +28,7 @@ public class PlayerController : MonoBehaviour
         StopMovement();
     }
 
-    void Update()
+void Update()
     {
         inputValue = Keyboard.current != null
         ? new Vector2(
@@ -36,6 +42,18 @@ public class PlayerController : MonoBehaviour
         {
             Quaternion targetRotation = Quaternion.LookRotation(moveDirection, Vector3.up);
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
+        }
+
+        // Bob the model child on Y — faster and larger while moving, gentle idle bob while still
+        bool isMoving = moveDirection.magnitude > 0.1f;
+        float freq = isMoving ? bobFrequency : bobFrequency * 0.4f;
+        float amp  = bobAmplitude;
+        _bobPhase += Time.deltaTime * freq * Mathf.PI * 2f;
+        if (playerModel != null)
+        {
+            Vector3 localPos = playerModel.localPosition;
+            localPos.y = Mathf.Sin(_bobPhase) * amp;
+            playerModel.localPosition = localPos;
         }
     }
 

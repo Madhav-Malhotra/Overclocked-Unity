@@ -1,6 +1,5 @@
 using UnityEngine;
 
-[RequireComponent(typeof(Renderer))]
 public class Interactable : MonoBehaviour
 {
     [Header("Highlight Settings")]
@@ -13,12 +12,14 @@ public class Interactable : MonoBehaviour
 
     protected virtual void Start()
     {
-        objectRenderer = GetComponent<Renderer>();
-        objectRenderer.material.EnableKeyword("_EMISSION");
+        objectRenderer = GetComponentInChildren<Renderer>();
+        if (objectRenderer != null)
+            objectRenderer.material.EnableKeyword("_EMISSION");
     }
 
     public virtual void SetHighlighted(bool highlighted)
     {
+        if (objectRenderer == null) return;
         Color emission = highlighted ? highlightColor * highlightIntersity : Color.black;
         objectRenderer.material.SetColor("_EmissionColor", emission);
     }

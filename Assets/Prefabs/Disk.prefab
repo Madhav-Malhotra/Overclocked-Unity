@@ -128,3 +128,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Disk
   highlightIntersity: 0.3
+  brickRenderer: {fileID: 0}
+  stageMaterialSlots: 
+  binaryMaterialSlot: -1
+  binaryFaceMaterial: {fileID: 0}
+  stageMaterials: []
+  currentStage: 0

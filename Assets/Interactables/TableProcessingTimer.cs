@@ -9,7 +9,7 @@ public class TableProcessingTimer : MonoBehaviour
     [SerializeField] private TextMeshProUGUI timerText;
 
     [Header("Settings")]
-    [SerializeField] private Vector3 offsetAboveTable = new Vector3(0, 1.5f, 0);
+    [SerializeField] private Vector3 offsetAboveTable = new Vector3(0, 3.5f, 0);
     [SerializeField] private Color processingColor = new Color(1f, 0.5f, 0f); // Orange
 
     private float duration;

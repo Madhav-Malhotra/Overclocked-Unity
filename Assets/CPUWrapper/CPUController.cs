@@ -59,12 +59,16 @@ public class CPUController : MonoBehaviour
     void OnDestroy()
     {
         if (cpu == null)
-        {
             return;
-        }
 
-        cpu.Dispose();
+        // Suppress the finalizer so the GC doesn't call cleanup_design_wrapper
+        // during domain reload (it hangs and deadlocks Unity).
+        GC.SuppressFinalize(cpu);
         cpu = null;
+
+        // cleanup_design_wrapper() blocks indefinitely in the editor, so we
+        // skip it here. The native DLL stays loaded between play sessions and
+        // init_design_wrapper() will reinitialize state on next enter play mode.
     }
 
     // temp method

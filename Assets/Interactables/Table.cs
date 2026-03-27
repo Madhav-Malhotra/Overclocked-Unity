@@ -1,66 +1,45 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class Table : Interactable
 {
     [Header("Table Settings")]
-    [SerializeField] private Disk currentDisk;
-    [SerializeField] private Transform diskSlot;
+    [FormerlySerializedAs("currentDisk")]
+    [SerializeField] private InstructionBrick currentBrick;
+    [FormerlySerializedAs("diskSlot")]
+    [SerializeField] private Transform brickSlot;
 
-    [Header("Processing Settings")]
-    [SerializeField] private GameObject processingTimerPrefab;
-    [SerializeField] private Color processingHighlightColor = new Color(1f, 0.3f, 0f); // Red/Orange
+    private InstructionBrickHoldingSystem holdingSystem;
 
-    [Header("UI References")]
-    [SerializeField] private TimerSelectionUI timerSelectionUI;
-
-    [Header("CPU")]
-    [SerializeField] private CPUController cpuController;
-
-    private DiskHoldingSystem holdingSystem;
-    private TableProcessingTimer activeTimer;
-    private bool isProcessing = false;
-    private bool isCurrentlyHighlighted = false;
-    private float processingEndTime = -1f;
-
-    public bool HasDisk => currentDisk != null;
-    public bool IsProcessing => isProcessing;
+    public bool HasBrick => currentBrick != null;
+    protected InstructionBrick CurrentBrick => currentBrick;
+    protected InstructionBrickHoldingSystem HoldingSystem => holdingSystem;
 
     protected override void Start()
     {
         base.Start();
-        // Find the DiskHoldingSystem on the player
-        holdingSystem = FindFirstObjectByType<DiskHoldingSystem>();
+        // Find the InstructionBrickHoldingSystem on the player
+        holdingSystem = FindFirstObjectByType<InstructionBrickHoldingSystem>();
 
         if (holdingSystem == null)
         {
-            Debug.LogError("Table: Could not find DiskHoldingSystem in scene");
+            Debug.LogError("Table: Could not find InstructionBrickHoldingSystem in scene");
         }
 
-        if (diskSlot == null)
+        if (brickSlot == null)
         {
-            Debug.LogWarning("Table: diskSlot not assigned");
+            Debug.LogWarning("Table: brickSlot not assigned");
         }
 
-        if (timerSelectionUI == null)
+        // Initialise any brick already placed on this table in the scene (e.g. Start station).
+        if (currentBrick != null)
         {
-            timerSelectionUI = FindFirstObjectByType<TimerSelectionUI>();
-        }
-    }
-
-    void Update()
-    {
-        if (isProcessing && Time.time >= processingEndTime)
-        {
-            OnProcessingComplete();
+            currentBrick.SetParentTable(this);
         }
     }
 
     public override bool CanBeHighlighted()
     {
-        // Processing tables should always be highlighted (to show red/orange color)
-        if (isProcessing) return true;
-
-        // Non-processing tables should only be highlighted if they can be interacted with
         return CanInteract();
     }
 
@@ -68,17 +47,14 @@ public class Table : Interactable
     {
         if (holdingSystem == null) return false;
 
-        // Cannot interact while processing
-        if (isProcessing) return false;
-
-        // Can pick up if player is NOT holding and this table HAS a disk
-        if (!holdingSystem.IsHoldingDisk() && HasDisk)
+        // Can pick up if player is NOT holding and this table HAS a brick
+        if (!holdingSystem.IsHoldingBrick() && HasBrick)
         {
             return true;
         }
 
-        // Can place if player IS holding and this table has NO disk
-        if (holdingSystem.IsHoldingDisk() && !HasDisk)
+        // Can place if player IS holding and this table has NO brick
+        if (holdingSystem.IsHoldingBrick() && !HasBrick)
         {
             return true;
         }
@@ -90,141 +66,51 @@ public class Table : Interactable
     {
         if (holdingSystem == null) return;
 
-        if (HasDisk)
+        if (HasBrick)
         {
-            // Pickup flow 
-            Disk diskToPickup = RemoveDisk();
-            holdingSystem.PickUpDisk(diskToPickup);
-
-            cpuController.GetALUOutput();
-        }
-        else
-        {
-            // Place flow - show timer selection popup
-            if (timerSelectionUI != null)
-            {
-                timerSelectionUI.ShowPopup(OnTimerSelected);
-            }
-            else
-            {
-                Debug.LogError("Table: TimerSelectionUI not found");
-                // Fallback: place immediately with 3s default
-                OnTimerSelected(3f);
-            }
-        }
-    }
-
-    private void OnTimerSelected(float duration)
-    {
-        if (holdingSystem == null) return;
-
-        // Place disk first; only start processing if placement succeeded.
-        bool placed = holdingSystem.PlaceDisk(this, duration);
-        if (!placed)
-        {
-            Debug.LogWarning("Table: Failed to place disk, skipping processing start");
+            InstructionBrick brickToPickup = RemoveBrick();
+            holdingSystem.PickUpBrick(brickToPickup);
             return;
         }
 
-        // Start processing state
-        StartProcessing(duration);
+        if (!TryPlaceHeldBrick())
+        {
+            Debug.LogWarning("Table: Failed to place brick");
+        }
     }
 
-    private void StartProcessing(float duration)
+    protected bool TryPlaceHeldBrick()
     {
-        isProcessing = true;
-        processingEndTime = Time.time + Mathf.Max(0f, duration);
-
-        // Spawn timer bar
-        if (processingTimerPrefab != null)
+        if (holdingSystem == null)
         {
-            GameObject timerObj = Instantiate(processingTimerPrefab, transform);
-            activeTimer = timerObj.GetComponent<TableProcessingTimer>();
-
-            if (activeTimer != null)
-            {
-                activeTimer.Initialize(duration, transform);
-            }
-            else
-            {
-                Debug.LogWarning("Table: processingTimerPrefab is missing TableProcessingTimer component");
-            }
-        }
-        else
-        {
-            Debug.LogWarning("Table: processingTimerPrefab is not assigned. Processing will continue without UI.");
+            return false;
         }
 
-        // Update highlight to processing color
-        RefreshHighlight();
+        return holdingSystem.PlaceBrick(this);
     }
 
-    private void OnProcessingComplete()
+    public virtual void PlaceBrick(InstructionBrick brick)
     {
-        if (!isProcessing) return;
+        if (brick == null) return;
 
-        isProcessing = false;
-        processingEndTime = -1f;
-
-        if (activeTimer != null)
-        {
-            Destroy(activeTimer.gameObject);
-            activeTimer = null;
-        }
-
-        // Restore normal highlight
-        RefreshHighlight();
+        currentBrick = brick;
+        brick.SetParentTable(this);
     }
 
-    public void PlaceDisk(Disk disk)
+    public InstructionBrick RemoveBrick()
     {
-        if (disk == null) return;
-
-        currentDisk = disk;
-        disk.SetParentTable(this);
-
-        cpuController.TickCPU();
-    }
-
-    public Disk RemoveDisk()
-    {
-        Disk disk = currentDisk;
-        currentDisk = null;
-        return disk;
+        InstructionBrick brick = currentBrick;
+        currentBrick = null;
+        return brick;
     }
 
     public override void SetHighlighted(bool highlighted)
     {
-        isCurrentlyHighlighted = highlighted;
-
-        if (isProcessing)
-        {
-            // Use red/orange processing color
-            Color emission = highlighted ? processingHighlightColor * highlightIntersity : Color.black;
-            objectRenderer.material.SetColor("_EmissionColor", emission);
-        }
-        else
-        {
-            // Normal white highlight
-            base.SetHighlighted(highlighted);
-        }
-
-        // Keep disk highlight in lockstep with the table state/color.
-        if (currentDisk != null)
-        {
-            currentDisk.SetHighlightColor(isProcessing ? processingHighlightColor : Color.white);
-            currentDisk.SetHighlighted(highlighted);
-        }
+        base.SetHighlighted(highlighted);
     }
 
-    private void RefreshHighlight()
+    public Transform GetBrickSlot()
     {
-        // Re-apply the current highlight state with updated processing/disk behavior.
-        SetHighlighted(isCurrentlyHighlighted);
-    }
-
-    public Transform GetDiskSlot()
-    {
-        return diskSlot;
+        return brickSlot;
     }
 }
