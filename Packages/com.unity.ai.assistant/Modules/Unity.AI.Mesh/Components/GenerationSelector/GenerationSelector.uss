@@ -1,0 +1,18 @@
+#open-generator-window:hover {
+    background-color: var(--unity-colors-app_toolbar-background);
+}
+
+.spinner {
+    background-image: url("/Packages/com.unity.ai.assistant/Modules/Unity.AI.Toolkit.Accounts/Icons/Spinner.png");
+}
+
+.vertical-layout #precache-label {
+    display: none;
+}
+
+.mesh-settings-icon {
+     --unity-image: resource("d_SettingsIcon");
+ }
+#mesh-settings-button:hover {
+    background-color: var(--unity-colors-app_toolbar-background);
+}
