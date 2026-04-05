@@ -8,6 +8,9 @@ public class CPUStation : Table
     [Header("CPU Stage")]
     [SerializeField] private PipelineStage assignedStage = PipelineStage.Unprocessed;
 
+    [Header("Debug")]
+    [SerializeField] private bool verboseLogging = true;
+
     [Header("Processing Settings")]
     [SerializeField] private bool requiresProcessing = true;
     [SerializeField] private GameObject processingTimerPrefab;
@@ -52,6 +55,11 @@ public class CPUStation : Table
         if (timerSelectionUI == null)
         {
             timerSelectionUI = FindFirstObjectByType<TimerSelectionUI>();
+        }
+
+        if (cpuController == null)
+        {
+            cpuController = FindFirstObjectByType<CPUController>();
         }
     }
 
@@ -118,6 +126,11 @@ public class CPUStation : Table
             return false;
         }
 
+        if (IsProcessing)
+        {
+            return false;
+        }
+
         // Picking up a placed brick is always allowed when the station is otherwise interactable.
         if (HasBrick)
         {
@@ -159,11 +172,24 @@ public class CPUStation : Table
             return;
         }
 
+        if (IsProcessing)
+        {
+            if (verboseLogging)
+            {
+                Debug.Log($"[CPUStation:{name}] Interaction ignored (processing in progress).");
+            }
+            return;
+        }
+
+        if (verboseLogging)
+        {
+            Debug.Log($"[CPUStation:{name}] OnInteract (HasBrick={HasBrick}, RequiresProcessing={RequiresProcessing}, Stage={assignedStage})");
+        }
+
         if (HasBrick)
         {
             InstructionBrick brickToPickup = RemoveBrick();
             HoldingSystem.PickUpBrick(brickToPickup);
-            CpuController?.GetALUOutput();
             return;
         }
 
@@ -190,13 +216,31 @@ public class CPUStation : Table
     public override void PlaceBrick(InstructionBrick brick)
     {
         base.PlaceBrick(brick);
-        CpuController?.TickCPU();
     }
 
     private void StartProcessing(float duration)
     {
+        if (isProcessing)
+        {
+            if (verboseLogging)
+            {
+                Debug.Log($"[CPUStation:{name}] StartProcessing ignored (already processing).");
+            }
+            return;
+        }
+
         isProcessing = true;
         processingEndTime = Time.time + Mathf.Max(0f, duration);
+
+        if (verboseLogging)
+        {
+            Debug.Log($"[CPUStation:{name}] StartProcessing duration={duration:0.###}s (ends at t={processingEndTime:0.###})");
+        }
+
+        if (RequiresProcessing && assignedStage != PipelineStage.Unprocessed)
+        {
+            CpuController?.BeginStationProcessing(assignedStage);
+        }
 
         if (processingTimerPrefab != null)
         {
@@ -228,10 +272,20 @@ public class CPUStation : Table
         isProcessing = false;
         processingEndTime = -1f;
 
+        if (verboseLogging)
+        {
+            Debug.Log($"[CPUStation:{name}] Processing complete (Stage={assignedStage})");
+        }
+
         if (activeTimer != null)
         {
             Destroy(activeTimer.gameObject);
             activeTimer = null;
+        }
+
+        if (RequiresProcessing && assignedStage != PipelineStage.Unprocessed)
+        {
+            CpuController?.EndStationProcessing(assignedStage);
         }
 
         if (!RequiresProcessing || assignedStage == PipelineStage.Unprocessed)

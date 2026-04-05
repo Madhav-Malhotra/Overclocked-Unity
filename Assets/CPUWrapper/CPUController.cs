@@ -1,11 +1,15 @@
 using System;
 using System.IO;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 public class CPUController : MonoBehaviour
 {
+    [Header("Debug")]
+    [SerializeField] private bool verboseLogging = true;
+
     private CPU cpu;
+    private int activeProcessingStations;
+    private bool cpuPaused;
 
     void Start()
     {
@@ -13,12 +17,92 @@ public class CPUController : MonoBehaviour
         {
             string levelPath = ResolveLevelPath();
             cpu = new CPU(levelPath);
-            CPU.dump_imem(10);
             Debug.Log($"CPU initialized. IMEM file: {levelPath}");
         }
         catch (Exception ex)
         {
             Debug.LogError($"CPU initialization failed: {ex.Message}");
+        }
+    }
+
+    public bool IsCpuPaused => cpuPaused;
+
+    public void SetCpuPaused(bool paused)
+    {
+        if (cpuPaused == paused)
+        {
+            return;
+        }
+
+        cpuPaused = paused;
+
+        if (verboseLogging)
+        {
+            Debug.Log($"[CPUController] CPU simulation paused = {cpuPaused}");
+        }
+    }
+
+    public void SetStationEnabled(PipelineStage stage, bool enabled)
+    {
+        if (cpu == null)
+        {
+            Debug.LogWarning("CPU not initialized.");
+            return;
+        }
+
+        if (verboseLogging)
+        {
+            Debug.Log($"[CPUController] Stage enable: {stage} = {enabled}");
+        }
+
+        switch (stage)
+        {
+            case PipelineStage.Fetch:
+                cpu.SetFetchEn(enabled);
+                break;
+            case PipelineStage.Decode:
+                cpu.SetFdEn(enabled);
+                break;
+            case PipelineStage.Execute:
+                cpu.SetDxEn(enabled);
+                break;
+            case PipelineStage.Memory:
+                cpu.SetXmEn(enabled);
+                break;
+            case PipelineStage.Writeback:
+                cpu.SetMwEn(enabled);
+                break;
+            default:
+                break;
+        }
+    }
+
+    public void BeginStationProcessing(PipelineStage stage)
+    {
+        activeProcessingStations = Mathf.Max(0, activeProcessingStations + 1);
+
+        if (verboseLogging)
+        {
+            Debug.Log($"[CPUController] Begin processing: {stage} (active stations = {activeProcessingStations})");
+        }
+
+        SetCpuPaused(true);
+        SetStationEnabled(stage, true);
+    }
+
+    public void EndStationProcessing(PipelineStage stage)
+    {
+        SetStationEnabled(stage, false);
+        activeProcessingStations = Mathf.Max(0, activeProcessingStations - 1);
+
+        if (verboseLogging)
+        {
+            Debug.Log($"[CPUController] End processing: {stage} (active stations = {activeProcessingStations})");
+        }
+
+        if (activeProcessingStations == 0)
+        {
+            SetCpuPaused(false);
         }
     }
 
@@ -49,6 +133,16 @@ public class CPUController : MonoBehaviour
         if (cpu == null)
         {
             Debug.LogWarning("CPU not initialized.");
+            return;
+        }
+
+        if (cpuPaused)
+        {
+            if (verboseLogging)
+            {
+                Debug.Log("[CPUController] TickCPU skipped (CPU paused).");
+            }
+
             return;
         }
 

@@ -12,7 +12,7 @@ public struct CPUState {
 
     [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
     public uint[] regs;
-    public uint aluOut;      // Maps to uint32_t
+    public uint alu_out;     // Maps to uint32_t
                              // branch_comp.v output ports
     public byte br_eq;
     public byte br_lt;
@@ -48,6 +48,12 @@ public struct CPUState {
     public uint data_rs2;       // [DATAW-1:0]
                                 // writeback.v output ports
     public uint wb_data; // dependent on DATAW=32
+
+    // additional per-stage values exposed by the native bridge
+    public uint dmem_data_in; // XM stage
+    public uint wb_in_alu;    // MW stage
+    public uint mem;          // MW stage
+    public uint pc4;          // MW stage
 }
 
 enum Operation : byte {
@@ -63,7 +69,38 @@ enum Operation : byte {
     NOP = 10,
 }
 
-class CPU : IDisposable
+public struct FetchStageData
+{
+    public uint pc;
+}
+
+public struct FdStageData
+{
+    public uint fd_pc;
+    public uint fd_pc4;
+    public uint instruction;
+}
+
+public struct DxStageData
+{
+    public uint addr_rs1;
+    public uint addr_rs2;
+}
+
+public struct XmStageData
+{
+    public uint alu_out;
+    public uint dmem_data_in;
+}
+
+public struct MwStageData
+{
+    public uint pc4;
+    public uint wb_in_alu;
+    public uint mem;
+}
+
+public class CPU : IDisposable
 {
     private const string NativeLib = "design_wrapper";
 
@@ -80,6 +117,21 @@ class CPU : IDisposable
 
     [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl)]
     public static extern void get_cpu_state(out CPUState state);
+
+    [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl)]
+    public static extern void set_fetch_en(bool val);
+
+    [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl)]
+    public static extern void set_fd_en(bool val);
+
+    [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl)]
+    public static extern void set_dx_en(bool val);
+
+    [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl)]
+    public static extern void set_xm_en(bool val);
+
+    [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl)]
+    public static extern void set_mw_en(bool val);
 
     [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl)]
     public static extern void set_imem(uint addr, uint instruction);
@@ -123,7 +175,7 @@ class CPU : IDisposable
 
     public uint GetALUOut() {
         get_cpu_state(out this.state);
-        return this.state.aluOut;
+        return this.state.alu_out;
     }
 
     // PrintState prints the state. Only select fields are shown, but more can be added. This is mostly a debugging function for development
@@ -133,12 +185,78 @@ class CPU : IDisposable
         Debug.Log(
             $"PC: 0x{state.pc,-8:X} | " +
             $"Instr: 0x{state.instruction,-8:X} | " +
-            $"ALU: {state.aluOut,-10} | " +
+            $"ALU: {state.alu_out,-10} | " +
             $"x0: {state.regs[0],-3} | " +
             $"x5: {state.regs[5],-3} | " +
             $"x6: 0x{state.regs[6],-8:X} | " +
             $"x7: {state.regs[7],-3}"
         );
+    }
+
+    public CPUState GetState()
+    {
+        get_cpu_state(out this.state);
+        return this.state;
+    }
+
+    public uint GetPC()
+    {
+        get_cpu_state(out this.state);
+        return this.state.pc;
+    }
+
+    public uint GetInstruction()
+    {
+        get_cpu_state(out this.state);
+        return this.state.instruction;
+    }
+
+    public uint GetALUOutValue()
+    {
+        get_cpu_state(out this.state);
+        return this.state.alu_out;
+    }
+
+    // Stage enables (Unity should not tick as a side-effect of enabling/disabling)
+    public void SetFetchEn(bool val) => set_fetch_en(val);
+    public void SetFdEn(bool val) => set_fd_en(val);
+    public void SetDxEn(bool val) => set_dx_en(val);
+    public void SetXmEn(bool val) => set_xm_en(val);
+    public void SetMwEn(bool val) => set_mw_en(val);
+
+    public FetchStageData GetFetch()
+    {
+        get_cpu_state(out this.state);
+        return new FetchStageData { pc = this.state.pc };
+    }
+
+    public FdStageData GetFd()
+    {
+        get_cpu_state(out this.state);
+        return new FdStageData
+        {
+            fd_pc = this.state.pc,
+            fd_pc4 = this.state.pc4,
+            instruction = this.state.instruction
+        };
+    }
+
+    public DxStageData GetDx()
+    {
+        get_cpu_state(out this.state);
+        return new DxStageData { addr_rs1 = this.state.addr_rs1, addr_rs2 = this.state.addr_rs2 };
+    }
+
+    public XmStageData GetXm()
+    {
+        get_cpu_state(out this.state);
+        return new XmStageData { alu_out = this.state.alu_out, dmem_data_in = this.state.dmem_data_in };
+    }
+
+    public MwStageData GetMw()
+    {
+        get_cpu_state(out this.state);
+        return new MwStageData { pc4 = this.state.pc4, wb_in_alu = this.state.wb_in_alu, mem = this.state.mem };
     }
 
     private CPUState state;
