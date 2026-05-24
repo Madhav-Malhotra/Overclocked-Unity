@@ -1,3 +1,9 @@
+# --- Unity Package Manager ---
+# Installed packages are restored automatically from manifest.json - no need to commit them
+Packages/**
+!Packages/manifest.json
+!Packages/packages-lock.json
+
 # --- Unity Standard ---
 /[Ll]ibrary/
 /[Tt]emp/
