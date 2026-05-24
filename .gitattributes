@@ -1,4 +1,7 @@
-# --- Unity YAML Merge --- 
+# --- Normalize all text files to LF in the repo ---
+* text=auto eol=lf
+
+# --- Unity YAML Merge ---
 # Allows multiple people to work on scenes/prefabs with fewer conflicts
 *.unity merge=unityyamlmerge eol=lf
 *.prefab merge=unityyamlmerge eol=lf
