@@ -24,7 +24,7 @@ public class LevelManager : MonoBehaviour
     public int CurrentLevelIndex => currentLevelIndex;
     public bool LevelActive => levelActive;
 
-    void Awake()
+void Awake()
     {
         if (Instance != null && Instance != this)
         {
@@ -32,16 +32,17 @@ public class LevelManager : MonoBehaviour
             return;
         }
         Instance = this;
+        DontDestroyOnLoad(gameObject);
     }
 
-    void Start()
+void Start()
     {
         if (playerController == null)
             playerController = FindFirstObjectByType<PlayerController>();
         if (playerInput == null)
             playerInput = FindFirstObjectByType<UnityEngine.InputSystem.PlayerInput>();
 
-        LoadLevel(0);
+        LoadLevel(LevelTransferData.NextLevelIndex);
     }
 
     void Update()
@@ -56,7 +57,7 @@ public class LevelManager : MonoBehaviour
         }
     }
 
-    public void LoadLevel(int index)
+public void LoadLevel(int index)
     {
         if (levelJsonFiles == null || index < 0 || index >= levelJsonFiles.Length)
         {
@@ -83,9 +84,6 @@ public class LevelManager : MonoBehaviour
 
         StartPlatform startPlatform = FindFirstObjectByType<StartPlatform>();
         startPlatform?.SpawnNextInstruction();
-
-        EndScreenUI endScreen = FindFirstObjectByType<EndScreenUI>(FindObjectsInactive.Include);
-        endScreen?.Hide();
     }
 
     public InstructionData GetNextInstruction()
@@ -106,18 +104,19 @@ public class LevelManager : MonoBehaviour
             OnLevelSuccess();
     }
 
-    private void OnLevelSuccess()
+private void OnLevelSuccess()
     {
         levelActive = false;
         FreezePlayer();
-        FindFirstObjectByType<EndScreenUI>(FindObjectsInactive.Include)?.ShowSuccess();
+        float timeTaken = currentLevelData.timeLimit - timeRemaining;
+        SceneLoader.LoadEndScreen(true, timeTaken, completedCount, totalCount, currentLevelIndex);
     }
 
-    private void OnTimeLimitReached()
+private void OnTimeLimitReached()
     {
         levelActive = false;
         FreezePlayer();
-        FindFirstObjectByType<EndScreenUI>(FindObjectsInactive.Include)?.ShowFailure();
+        SceneLoader.LoadEndScreen(false, 0f, completedCount, totalCount, currentLevelIndex);
     }
 
     private void FreezePlayer()

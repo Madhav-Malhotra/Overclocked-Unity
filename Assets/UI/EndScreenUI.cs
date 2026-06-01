@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class EndScreenUI : MonoBehaviour
 {
@@ -7,80 +8,58 @@ public class EndScreenUI : MonoBehaviour
     [SerializeField] private GameObject successPanel;
     [SerializeField] private GameObject failurePanel;
 
-    [Header("Buttons")]
-    [SerializeField] private Button replayButton;
+    [Header("Success Panel")]
+    [SerializeField] private TextMeshProUGUI successHeaderText;
+    [SerializeField] private TextMeshProUGUI successStatText;
     [SerializeField] private Button nextLevelButton;
-    [SerializeField] private Button replayButtonFailure;
+    [SerializeField] private Button retryButtonSuccess;
 
-    [Header("Player References")]
-    [SerializeField] private PlayerController playerController;
-    [SerializeField] private UnityEngine.InputSystem.PlayerInput playerInput;
+    [Header("Failure Panel")]
+    [SerializeField] private TextMeshProUGUI failureHeaderText;
+    [SerializeField] private TextMeshProUGUI failureStatText;
+    [SerializeField] private Button retryButtonFailure;
 
     void Awake()
     {
-        if (playerController == null)
-            playerController = FindFirstObjectByType<PlayerController>();
-        if (playerInput == null)
-            playerInput = FindFirstObjectByType<UnityEngine.InputSystem.PlayerInput>();
-
-        replayButton?.onClick.AddListener(OnReplay);
+        retryButtonSuccess?.onClick.AddListener(OnRetry);
+        retryButtonFailure?.onClick.AddListener(OnRetry);
         nextLevelButton?.onClick.AddListener(OnNextLevel);
-        replayButtonFailure?.onClick.AddListener(OnReplay);
 
-        Hide();
+        if (LevelTransferData.Success)
+        {
+            int minutes = Mathf.FloorToInt(LevelTransferData.TimeTaken / 60f);
+            int seconds = Mathf.FloorToInt(LevelTransferData.TimeTaken % 60f);
+            ShowSuccess($"Time: {minutes:00}:{seconds:00}");
+        }
+        else
+        {
+            ShowFailure($"Instructions completed: {LevelTransferData.CompletedCount}/{LevelTransferData.TotalCount}");
+        }
     }
 
-    public void ShowSuccess()
+    private void ShowSuccess(string stat)
     {
+        if (successHeaderText != null) successHeaderText.text = "Level Complete!";
+        if (successStatText != null) successStatText.text = stat;
         successPanel?.SetActive(true);
         failurePanel?.SetActive(false);
-        gameObject.SetActive(true);
-        FreezePlayer();
     }
 
-    public void ShowFailure()
+    private void ShowFailure(string stat)
     {
+        if (failureHeaderText != null) failureHeaderText.text = "Try Again!";
+        if (failureStatText != null) failureStatText.text = stat;
         successPanel?.SetActive(false);
         failurePanel?.SetActive(true);
-        gameObject.SetActive(true);
-        FreezePlayer();
     }
 
-    public void Hide()
+    private void OnRetry()
     {
-        gameObject.SetActive(false);
-        successPanel?.SetActive(false);
-        failurePanel?.SetActive(false);
-    }
-
-    private void OnReplay()
-    {
-        UnfreezePlayer();
-        LevelManager.Instance?.LoadLevel(LevelManager.Instance.CurrentLevelIndex);
+        SceneLoader.LoadGame(LevelTransferData.NextLevelIndex);
     }
 
     private void OnNextLevel()
     {
-        if (LevelManager.Instance == null) return;
-        int next = LevelManager.Instance.CurrentLevelIndex + 1;
-        UnfreezePlayer();
-        LevelManager.Instance.LoadLevel(next);
-    }
-
-    private void FreezePlayer()
-    {
-        if (playerController != null)
-        {
-            playerController.StopMovement();
-            playerController.enabled = false;
-        }
-        playerInput?.DeactivateInput();
-    }
-
-    private void UnfreezePlayer()
-    {
-        if (playerController != null)
-            playerController.enabled = true;
-        playerInput?.ActivateInput();
+        SceneLoader.LoadGame(LevelTransferData.NextLevelIndex + 1);
     }
 }
