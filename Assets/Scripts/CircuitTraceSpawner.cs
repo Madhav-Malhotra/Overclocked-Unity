@@ -15,7 +15,7 @@ public class CircuitTraceSpawner : MonoBehaviour
 
     private static readonly string[] StationOrder =
     {
-        "Start", "Fetch", "Decode", "Execute", "Memory", "Writeback"
+        "Start", "Fetch", "Decode", "Execute", "Memory", "Writeback", "End"
     };
 
     private void Awake()

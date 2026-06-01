@@ -1,0 +1,9 @@
+{
+  "levelName": "Level 1",
+  "timeLimit": 120,
+  "instructions": [
+    { "id": "ADD R1 R2 R3" },
+    { "id": "SUB R4 R5 R6" },
+    { "id": "LW R7 0(R8)" }
+  ]
+}

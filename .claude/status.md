@@ -1,0 +1,7 @@
+# Project Status
+
+**Player** (`Assets/Player/`): `PlayerController.cs` (Rigidbody WASD movement), `InteractableDetector.cs` (OverlapSphere highlight), `PlayerInteractionHandler.cs` (E key interact), `InstructionBrickHoldingSystem.cs` (carry system), `InputActionsInitializer.cs`, `PlayerMovementAudio.cs`.
+
+**Interactables** (`Assets/Interactables/`): `Interactable.cs` (URP emission highlight base), `Table.cs` + `TableProcessingTimer.cs` (processing stations), `CPUStation.cs` + `PipelineStage.cs` (CPU pipeline components), `InstructionBrick.cs` (data item players carry), `BrickMeshBuilder.cs` (procedural brick mesh), `CPUStationScreenSpaceOutlineRendererFeature.cs` (URP outline pass); 3D models in `Models/` (ALU, Decoder, Memory, Multiplexer, Regfile, Pedestal).
+
+**CPUWrapper** (`Assets/CPUWrapper/`): `CPU.cs` + `CPUController.cs` wrap the simulated CPU logic; **UI** (`Assets/UI/`): `InteractionUIManager.cs` (HUD prompt), `GameHUD.cs` (top-left countdown + m/n progress badges), `EndScreenUI.cs` (success/failure overlay); `Assets/UI/RoundedBadge.png` (sliced sprite for badge backgrounds, border=26); font: `Assets/Fonts/Fredoka new.asset`; **Scripts** (`Assets/Scripts/`): `CircuitTrace.cs` + `CircuitTraceSpawner.cs` (decorative circuit line visuals); **Scenes** (`Assets/Scenes/`): game scenes; **Prefabs** (`Assets/Prefabs/`): reusable prefabs; **Settings** (`Assets/Settings/`): URP renderer/pipeline assets.

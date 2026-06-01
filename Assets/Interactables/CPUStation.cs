@@ -12,9 +12,6 @@ public class CPUStation : Table
     [SerializeField] private bool requiresProcessing = true;
     [SerializeField] private GameObject processingTimerPrefab;
 
-    [Header("UI References")]
-    [SerializeField] private TimerSelectionUI timerSelectionUI;
-
     [Header("CPU")]
     [SerializeField] private CPUController cpuController;
 
@@ -39,7 +36,6 @@ public class CPUStation : Table
 
     private bool IsProcessing => isProcessing;
     private bool RequiresProcessing => requiresProcessing;
-    private TimerSelectionUI TimerSelectionUI => timerSelectionUI;
     private CPUController CpuController => cpuController;
 
     protected override void Start()
@@ -48,11 +44,6 @@ public class CPUStation : Table
         EnsureOutlineMaterial();
         SyncOutlineRenderers();
         ApplyOutlineVisibility(false);
-
-        if (timerSelectionUI == null)
-        {
-            timerSelectionUI = FindFirstObjectByType<TimerSelectionUI>();
-        }
     }
 
     void Update()
@@ -118,7 +109,6 @@ public class CPUStation : Table
             return false;
         }
 
-        // Picking up a placed brick is always allowed when the station is otherwise interactable.
         if (HasBrick)
         {
             return true;
@@ -154,10 +144,7 @@ public class CPUStation : Table
 
     public override void OnInteract()
     {
-        if (HoldingSystem == null)
-        {
-            return;
-        }
+        if (HoldingSystem == null) return;
 
         if (HasBrick)
         {
@@ -170,21 +157,17 @@ public class CPUStation : Table
         if (!RequiresProcessing)
         {
             if (!TryPlaceHeldBrick())
-            {
                 Debug.LogWarning("CPUStation: Failed to place brick");
-            }
             return;
         }
 
-        if (TimerSelectionUI != null)
+        if (!TryPlaceHeldBrick())
         {
-            TimerSelectionUI.ShowPopup(OnTimerSelected);
+            Debug.LogWarning("CPUStation: Failed to place brick, skipping processing start");
+            return;
         }
-        else
-        {
-            Debug.LogError("CPUStation: TimerSelectionUI not found");
-            OnTimerSelected(3f);
-        }
+
+        StartProcessing(1f);
     }
 
     public override void PlaceBrick(InstructionBrick brick)
@@ -543,16 +526,5 @@ public class CPUStation : Table
             PipelineStage.Writeback => PipelineStage.Memory,
             _ => PipelineStage.Unprocessed
         };
-    }
-
-    private void OnTimerSelected(float duration)
-    {
-        if (!TryPlaceHeldBrick())
-        {
-            Debug.LogWarning("CPUStation: Failed to place brick, skipping processing start");
-            return;
-        }
-
-        StartProcessing(duration);
     }
 }

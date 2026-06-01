@@ -9,6 +9,8 @@ When invoked, execute the four-phase loop below for every implementation task in
 
 ## Phase 1 — Plan
 
+Note: a short summary of the most important files in the project can be found in `.claude/status.md`
+
 1. Gather context using MCP tools before writing anything:
    - Read every script the change will touch (`Unity_ManageScript` or `Unity_FindInFile`).
    - Identify all scene GameObjects or prefabs that reference those scripts (`Unity_FindProjectAssets`, `Unity_ManageScene`).
@@ -70,6 +72,8 @@ When all planned changes are verified:
 2. List any **[USER ACTION REQUIRED]** steps that still need to be done manually in the Editor.
 3. List any **[BREAKING RISK]** items and confirm they were resolved or explicitly deferred.
 4. Note any non-obvious follow-up work (e.g. "the new serialized field `stationId` needs to be set on each CPUStation prefab instance in the scene").
+5. IMPORTANT: update `.claude/status.md` ONLY IF NECESSARY to let future AI agents know where to look for important files. This file must be kept small so that AI agents don't waste tokens loading it.
+
 
 ---
 

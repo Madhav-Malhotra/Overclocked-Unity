@@ -7,7 +7,7 @@ public class Table : Interactable
     [FormerlySerializedAs("currentDisk")]
     [SerializeField] private InstructionBrick currentBrick;
     [FormerlySerializedAs("diskSlot")]
-    [SerializeField] private Transform brickSlot;
+    [SerializeField] public Transform brickSlot;
 
     private InstructionBrickHoldingSystem holdingSystem;
 
@@ -97,12 +97,16 @@ public class Table : Interactable
         brick.SetParentTable(this);
     }
 
-    public InstructionBrick RemoveBrick()
+public InstructionBrick RemoveBrick()
     {
         InstructionBrick brick = currentBrick;
         currentBrick = null;
+        OnBrickRemoved();
         return brick;
     }
+
+protected virtual void OnBrickRemoved() { }
+
 
     public override void SetHighlighted(bool highlighted)
     {
@@ -113,4 +117,7 @@ public class Table : Interactable
     {
         return brickSlot;
     }
+
+public void SetBrickSlot(Transform slot) { brickSlot = slot; }
+
 }
