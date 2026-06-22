@@ -6,6 +6,11 @@ public class StartPlatform : Table
     [SerializeField] private GameObject instructionBrickPrefab;
     [SerializeField] private float spawnDelay = 1f;
 
+    private int _spawnIndex;
+    private const uint ImemBaseAddr = 0x01000000u;
+
+    public uint NextSpawnPc => ImemBaseAddr + (uint)(_spawnIndex * 4);
+
     public void SpawnNextInstruction()
     {
         if (HasBrick) return;
@@ -33,6 +38,8 @@ public class StartPlatform : Table
             return;
         }
 
+        brick.SetInstructionPc(ImemBaseAddr + (uint)(_spawnIndex * 4));
+        _spawnIndex++;
         PlaceBrick(brick);
     }
 

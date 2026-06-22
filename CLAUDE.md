@@ -21,23 +21,6 @@ The project is currently just a rudimentary player controller and interactable b
 
 All gameplay scripts are plain C# `MonoBehaviour` classes — no custom base classes or managers yet.
 
-**Player system** (`Assets/Player/`):
-- `PlayerController.cs` — Rigidbody-based movement using raw `Keyboard.current` polling (WASD). Applies velocity in `FixedUpdate`, handles rotation via `Quaternion.Slerp` in `Update`. Exposes `StopMovement()` for UI freeze.
-- `InteractableDetector.cs` — Each `Update`, casts `Physics.OverlapSphere` within `interactionRadius`, filters candidates by a forward-facing dot product threshold (`detectionAngle`), and highlights the nearest qualifying `Interactable`. Exposes `GetCurrentHighlighted()`.
-- `PlayerInteractionHandler.cs` — Listens for the `Interact` input action (E key / gamepad Y). On press, calls `OnInteract()` on whatever `InteractableDetector` currently highlights. Also drives `InteractionUIManager` prompt visibility each frame.
-- `DiskHoldingSystem.cs` — Manages the single disk the player can carry. `PickUpDisk` parents the disk to a `holdPosition` transform and scales it down; `PlaceDisk(Table, float)` re-parents to the table's `diskSlot` and hands off to `Table.StartProcessing`.
-- `InputActionsInitializer.cs` — On `Start`, disables all action maps then enables only the `Player` map from `InputSystem.actions`.
-
-**Interactable system** (`Assets/Interactables/`):
-- `Interactable.cs` — Base class. Requires a `Renderer`. Uses URP emission (`_EmissionColor` / `_EMISSION` keyword) to highlight objects. Virtual API: `CanBeHighlighted()`, `CanInteract()`, `OnInteract()`, `SetHighlighted(bool)`.
-- `Disk.cs` — Extends `Interactable`. Always returns `false` from `CanBeHighlighted()` and `CanInteract()` — the player never interacts with disks directly. Provides `EnablePhysics(bool)` and `SetHighlightColor(Color)` for use by `Table` and `DiskHoldingSystem`.
-- `Table.cs` — Extends `Interactable`. Manages pick-up/place logic by querying `DiskHoldingSystem`. On place, opens `TimerSelectionUI` to choose a processing duration, then calls `StartProcessing(float)` which spawns a `TableProcessingTimer` prefab and sets a red/orange highlight. Interaction is blocked while processing.
-- `TableProcessingTimer.cs` — World-space billboard UI (fill bar + text) that counts down above a table. Destroyed by `Table` when processing completes.
-
-**UI system** (`Assets/UI/`):
-- `InteractionUIManager.cs` — HUD prompt ("E - Pick Up" / "E - Place") shown via `CanvasGroup` alpha. Updated every frame by `PlayerInteractionHandler`.
-- `TimerSelectionUI.cs` — Modal popup with 1s / 3s / 5s / 10s buttons. Freezes player (`PlayerController.enabled = false` + `PlayerInput.DeactivateInput()`) while open; ESC cancels. Invokes a callback with the selected duration.
-
 ### Input
 
 `InputSystem_Actions.inputactions` exists but only the `Player` action map is enabled at runtime (via `InputActionsInitializer`). Movement uses `Keyboard.current` directly; interaction uses `PlayerInput`/`InputAction` from the asset. New inputs should use the `Player` action map and be accessed via `PlayerInput` component.
@@ -55,6 +38,7 @@ All gameplay scripts are plain C# `MonoBehaviour` classes — no custom base cla
 - `.unity`, `.prefab`, and `.asset` files use Unity YAML Merge (`unityyamlmerge`) — avoid manual text-editor merges on these files.
 - Binary assets (textures, audio, models) are tracked via Git LFS.
 - The `Library/` folder is local Unity cache and is gitignored — it is rebuilt on first open after cloning.
+- When setting coordinates, keep in mind that the origin (0,0) is the top left of the screen in 2D mode. Increasing X moves right, increasing Y moves down.
 
 ## Unity MCP Tools
 
@@ -80,6 +64,9 @@ A Unity MCP server is connected and available. Prefer MCP tools over manual file
 - `Unity_CreateScript` creates an empty file with a `.meta` — then use `Unity_ManageScript` to write the content. Do not create `.cs` files with the `Write` tool if the Editor is open, as this can cause `.meta` desync.
 - Always call `Unity_ValidateScript` before writing a script that touches existing MonoBehaviour fields; a compile error can break Enter Play Mode for all scripts.
 - After any structural scene change (adding/removing components, changing serialized references), save the scene explicitly with `Unity_ManageScene` or `Unity_RunCommand` → `File/Save`.
+- **Recompile disconnects:** Writing a script triggers Unity recompilation which drops the MCP connection. If the next MCP call fails with "Unity not detected", wait ~8 seconds and retry once.
+- **Stuck on the same error:** If the same MCP tool call fails 3 times in a row, stop and ask the user to perform the step manually instead of continuing to retry.
+- **Scene object references:** `Unity_ManageGameObject` cannot reliably set `UnityEngine.Object` reference fields via `{"find": ..., "method": ...}` syntax (JSON deserialisation bug). After 2 failed attempts, mark as **[USER ACTION REQUIRED]** and move on.
 
 ## Implementation Loop
 

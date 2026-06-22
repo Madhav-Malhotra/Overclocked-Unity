@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Runtime.InteropServices;
 using UnityEngine;
@@ -48,6 +48,28 @@ public struct CPUState {
     public uint data_rs2;       // [DATAW-1:0]
                                 // writeback.v output ports
     public uint wb_data; // dependent on DATAW=32
+    // pipeline stage data (must stay in sync with CPUState in bridge.cpp)
+    // fd
+    public uint fd_pc;
+    public uint fd_pc4;
+    public byte opcode_fd;
+    public byte addr_rd_fd;
+    // dx
+    public byte opcode_dx;
+    public byte addr_rd_dx;
+    public uint dx_pc;
+    // xm
+    public uint dmem_data_in;
+    public byte opcode_xm;
+    public byte addr_rd_xm;
+    public uint xm_pc;
+    // mw
+    public uint wb_in_alu;
+    public uint mem;
+    public uint mw_pc4;
+    public byte opcode_mw;
+    public byte addr_rd_mw;
+    public uint mw_pc;
 }
 
 enum Operation : byte {

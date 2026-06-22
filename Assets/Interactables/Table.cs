@@ -12,7 +12,7 @@ public class Table : Interactable
     private InstructionBrickHoldingSystem holdingSystem;
 
     public bool HasBrick => currentBrick != null;
-    protected InstructionBrick CurrentBrick => currentBrick;
+    public InstructionBrick CurrentBrick => currentBrick;
     protected InstructionBrickHoldingSystem HoldingSystem => holdingSystem;
 
     protected override void Start()

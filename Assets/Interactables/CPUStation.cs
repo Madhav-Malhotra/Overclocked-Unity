@@ -34,6 +34,7 @@ public class CPUStation : Table
     private bool isProcessing;
     private float processingEndTime = -1f;
 
+    public PipelineStage AssignedStage => assignedStage;
     private bool IsProcessing => isProcessing;
     private bool RequiresProcessing => requiresProcessing;
     private CPUController CpuController => cpuController;
@@ -109,12 +110,7 @@ public class CPUStation : Table
             return false;
         }
 
-        if (HasBrick)
-        {
-            return true;
-        }
-
-        return !IsInvalidPlacementForHeldBrick();
+        return true;
     }
 
     public override void SetHighlighted(bool highlighted)
@@ -173,7 +169,6 @@ public class CPUStation : Table
     public override void PlaceBrick(InstructionBrick brick)
     {
         base.PlaceBrick(brick);
-        CpuController?.TickCPU();
     }
 
     private void StartProcessing(float duration)
@@ -489,42 +484,6 @@ public class CPUStation : Table
 
     private Color GetOutlineColor()
     {
-        return IsProcessing || IsInvalidPlacementForHeldBrick()
-            ? blockedOutlineColor
-            : interactableOutlineColor;
-    }
-
-    private bool IsInvalidPlacementForHeldBrick()
-    {
-        if (HoldingSystem == null || !HoldingSystem.IsHoldingBrick() || HasBrick)
-        {
-            return false;
-        }
-
-        if (assignedStage == PipelineStage.Unprocessed)
-        {
-            return false;
-        }
-
-        InstructionBrick heldBrick = HoldingSystem.GetHeldBrick();
-        if (heldBrick == null)
-        {
-            return false;
-        }
-
-        return heldBrick.CurrentStage != GetRequiredInputStage(assignedStage);
-    }
-
-    private static PipelineStage GetRequiredInputStage(PipelineStage outputStage)
-    {
-        return outputStage switch
-        {
-            PipelineStage.Fetch => PipelineStage.Unprocessed,
-            PipelineStage.Decode => PipelineStage.Fetch,
-            PipelineStage.Execute => PipelineStage.Decode,
-            PipelineStage.Memory => PipelineStage.Execute,
-            PipelineStage.Writeback => PipelineStage.Memory,
-            _ => PipelineStage.Unprocessed
-        };
+        return IsProcessing ? blockedOutlineColor : interactableOutlineColor;
     }
 }

@@ -1,11 +1,12 @@
 using System;
 using System.IO;
+using System.Runtime.InteropServices;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 public class CPUController : MonoBehaviour
 {
     private CPU cpu;
+    private CPUState stateB;
 
     void Start()
     {
@@ -15,11 +16,27 @@ public class CPUController : MonoBehaviour
             cpu = new CPU(levelPath);
             CPU.dump_imem(10);
             Debug.Log($"CPU initialized. IMEM file: {levelPath}");
+
+            CPU.get_cpu_state(out stateB);
         }
         catch (Exception ex)
         {
             Debug.LogError($"CPU initialization failed: {ex.Message}");
         }
+    }
+
+    public CPUState GetStateB() => stateB;
+
+    public void AdvanceTick()
+    {
+        if (cpu == null)
+        {
+            Debug.LogWarning("CPU not initialized.");
+            return;
+        }
+
+        CPU.tick();
+        CPU.get_cpu_state(out stateB);
     }
 
     public void PrintCPUState()
@@ -44,48 +61,25 @@ public class CPUController : MonoBehaviour
         return cpu.GetALUOut();
     }
 
-    public void TickCPU()
-    {
-        if (cpu == null)
-        {
-            Debug.LogWarning("CPU not initialized.");
-            return;
-        }
-
-        CPU.tick();
-        cpu.PrintState();
-    }
-
     void OnDestroy()
     {
         if (cpu == null)
             return;
 
-        // Suppress the finalizer so the GC doesn't call cleanup_design_wrapper
-        // during domain reload (it hangs and deadlocks Unity).
         GC.SuppressFinalize(cpu);
         cpu = null;
-
-        // cleanup_design_wrapper() blocks indefinitely in the editor, so we
-        // skip it here. The native DLL stays loaded between play sessions and
-        // init_design_wrapper() will reinitialize state on next enter play mode.
     }
 
-    // temp method
     private static string ResolveLevelPath()
     {
         string assetsLevel = Path.Combine(Application.dataPath, "CPUWrapper", "level1.txt");
         if (File.Exists(assetsLevel))
-        {
             return assetsLevel;
-        }
 
         string repoRoot = Path.GetFullPath(Path.Combine(Application.dataPath, ".."));
         string verilatorLevel = Path.Combine(repoRoot, "verilator", "level1.txt");
         if (File.Exists(verilatorLevel))
-        {
             return verilatorLevel;
-        }
 
         throw new FileNotFoundException(
             $"Could not find level1.txt. Checked: {assetsLevel} and {verilatorLevel}"

@@ -26,6 +26,14 @@ Note: a short summary of the most important files in the project can be found in
 
 ---
 
+## MCP connection notes
+
+- **Recompile disconnects:** After writing a script, Unity recompiles and the MCP connection drops briefly. If the next MCP call fails with "Unity not detected", wait ~8 seconds and retry once.
+- **Stuck on the same error:** If the same MCP tool call fails 3 times in a row (same error, different attempts), stop and ask the user to do the step manually. Do not keep retrying.
+- **Scene object references:** `Unity_ManageGameObject` cannot reliably set `UnityEngine.Object` reference fields via the `{"find": ..., "method": ...}` syntax — it deserialises incorrectly. If setting a component reference fails after 2 attempts, mark it **[USER ACTION REQUIRED]** and move on.
+
+---
+
 ## Phase 2 — Implement
 
 Work through the confirmed plan one logical unit at a time. Never batch multiple unrelated changes into a single apply.
@@ -72,7 +80,8 @@ When all planned changes are verified:
 2. List any **[USER ACTION REQUIRED]** steps that still need to be done manually in the Editor.
 3. List any **[BREAKING RISK]** items and confirm they were resolved or explicitly deferred.
 4. Note any non-obvious follow-up work (e.g. "the new serialized field `stationId` needs to be set on each CPUStation prefab instance in the scene").
-5. IMPORTANT: update `.claude/status.md` ONLY IF NECESSARY to let future AI agents know where to look for important files. This file must be kept small so that AI agents don't waste tokens loading it.
+5. Output a **[USER TEST REQUIRED]** block with explicit step-by-step instructions the user must follow in-game to verify the changes work correctly (e.g. "Enter Play Mode, pick up a brick, place it on the Fetch station, press T — expect no error panel"). Be specific about what to do and what to observe.
+6. IMPORTANT: update `.claude/status.md` ONLY IF NECESSARY to let future AI agents know where to look for important files. This file must be kept small so that AI agents don't waste tokens loading it.
 
 
 ---

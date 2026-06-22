@@ -52,7 +52,10 @@ private void Update()
         transform.localPosition = new Vector3(0f, bobBaseHeight + yOffset, 0f);
     }
 
-    public PipelineStage CurrentStage => currentStage;
+    
+    public uint InstructionPc { get; private set; }
+    public void SetInstructionPc(uint pc) { InstructionPc = pc; }
+public PipelineStage CurrentStage => currentStage;
 
     public override bool CanBeHighlighted()
     {
