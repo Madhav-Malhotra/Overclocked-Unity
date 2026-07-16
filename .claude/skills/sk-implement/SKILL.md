@@ -11,8 +11,8 @@ When invoked, execute the four-phase loop below for every implementation task in
 
 Note: a short summary of the most important files in the project can be found in `.claude/status.md`
 
-1. Gather context using MCP tools before writing anything:
-   - Read every script the change will touch (`Unity_ManageScript` or `Unity_FindInFile`).
+1. Gather context before writing anything:
+   - Read every script the change will touch using plain `Read` (or `Unity_FindInFile` for searching).
    - Identify all scene GameObjects or prefabs that reference those scripts (`Unity_FindProjectAssets`, `Unity_ManageScene`).
    - Note every serialized field (`[SerializeField]` or `public`) that will be added, removed, or renamed — these break prefab/scene references silently if changed without updating all usages.
 
@@ -39,10 +39,9 @@ Note: a short summary of the most important files in the project can be found in
 Work through the confirmed plan one logical unit at a time. Never batch multiple unrelated changes into a single apply.
 
 **For C# script changes:**
-1. Draft the new content.
-2. Run `Unity_ValidateScript` with the draft. If it reports errors, fix them before proceeding.
-3. Apply with `Unity_ScriptApplyEdits` (preferred for targeted edits) or `Unity_ManageScript` (for full rewrites).
-4. If the change renames or removes a serialized field, immediately update every prefab/scene that referenced it using `Unity_ManageGameObject` or ask the user to rewire in the Inspector.
+1. Use plain `Read`/`Edit`/`Write` to make the change, not `Unity_ManageScript`/`Unity_ScriptApplyEdits` — this keeps changes visible to the user as normal file diffs instead of opaque MCP calls. Use `Unity_CreateScript` only when creating a brand-new file (so the `.meta` is generated correctly), then fill it in with `Write`.
+2. After writing, optionally call `Unity_ValidateScript` on the file if you want Unity's confirmation that it compiles / was picked up — this is a read/verify step, not how the edit itself should be made.
+3. If the change renames or removes a serialized field, immediately update every prefab/scene that referenced it using `Unity_ManageGameObject` or ask the user to rewire in the Inspector.
 
 **For scene/prefab changes:**
 - Use `Unity_ManageGameObject` to add, remove, or configure components.
@@ -63,12 +62,11 @@ Run these checks after **each logical unit** — not just at the end.
    - If any new errors appear, fix them now. Do not continue to the next change with a broken compile state.
    - Warnings about missing references or null components count as blockers; fix or explicitly acknowledge them.
 
-2. **Visual check:** Enter Play Mode (`Unity_ManageEditor`), then capture:
-   - `Unity_Camera_Capture` for runtime Game view.
-   - `Unity_SceneView_Capture2DScene` or `Unity_SceneView_CaptureMultiAngleSceneView` for scene layout.
-   - Confirm the screenshot matches the intended behaviour. If it does not, return to Phase 2 for that unit.
+2. **Play Mode verification is the user's job, not Claude's.** Do not drive gameplay or player-controlled interactions yourself — the user has controls the agent doesn't. Instead:
+   - Once the console check is clean, hand off to the user with specific instructions: what to do (movement, interactions, key presses) and what to look for/verify (expected visual state, absence of errors, specific values).
+   - Claude may still enter Play Mode or take a screenshot briefly itself for a quick look at UI/frontend state (e.g. confirming a HUD element renders), but not to exercise gameplay flows.
 
-3. Exit Play Mode before proceeding to the next change.
+3. Exit Play Mode (if Claude entered it for a quick look) before proceeding to the next change.
 
 ---
 
@@ -80,7 +78,7 @@ When all planned changes are verified:
 2. List any **[USER ACTION REQUIRED]** steps that still need to be done manually in the Editor.
 3. List any **[BREAKING RISK]** items and confirm they were resolved or explicitly deferred.
 4. Note any non-obvious follow-up work (e.g. "the new serialized field `stationId` needs to be set on each CPUStation prefab instance in the scene").
-5. Output a **[USER TEST REQUIRED]** block with explicit step-by-step instructions the user must follow in-game to verify the changes work correctly (e.g. "Enter Play Mode, pick up a brick, place it on the Fetch station, press T — expect no error panel"). Be specific about what to do and what to observe.
+5. Output a **[USER TEST REQUIRED]** block with explicit step-by-step instructions the user must follow in-game to verify the changes work correctly (e.g. "Enter Play Mode, pick up a brick, place it on the Fetch station, press T — expect no error panel"). Be specific about what to do and what to observe. This is the primary verification step — the user drives Play Mode, not Claude.
 6. IMPORTANT: update `.claude/status.md` ONLY IF NECESSARY to let future AI agents know where to look for important files. This file must be kept small so that AI agents don't waste tokens loading it.
 
 
@@ -90,15 +88,14 @@ When all planned changes are verified:
 
 | Need | Tool |
 |---|---|
-| Read a script | `Unity_ManageScript` (action: read) |
-| Write/overwrite a script | `Unity_ValidateScript` then `Unity_ManageScript` |
-| Targeted script diff | `Unity_ScriptApplyEdits` / `Unity_ApplyTextEdits` |
-| Create a new script file | `Unity_CreateScript` (creates with `.meta`), then write content |
+| Read a script | plain `Read` |
+| Write/overwrite or targeted-edit a script | plain `Edit`/`Write`, then optionally `Unity_ValidateScript` to confirm Unity picked it up |
+| Create a new script file | `Unity_CreateScript` (creates with `.meta`), then fill content with `Write` |
 | Delete a script | `Unity_DeleteScript` |
 | Find assets by name/type | `Unity_FindProjectAssets` |
 | Add/remove component on GameObject | `Unity_ManageGameObject` |
 | Open/save scene | `Unity_ManageScene` |
-| Enter/exit Play Mode | `Unity_ManageEditor` |
+| Enter/exit Play Mode (brief UI-only check — not for driving gameplay) | `Unity_ManageEditor` |
 | Read console logs | `Unity_GetConsoleLogs` / `Unity_ReadConsole` |
 | Screenshot (Game view) | `Unity_Camera_Capture` |
 | Screenshot (Scene view) | `Unity_SceneView_Capture2DScene` |

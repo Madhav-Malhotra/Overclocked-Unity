@@ -115,18 +115,16 @@ Do not close the loop until you have confirmed the bug is gone and nothing else 
 
 1. **Console check:** `Unity_GetConsoleLogs` — confirm the original error is gone and no new errors appeared.
 
-2. **Visual / behavioural check:** Enter Play Mode (`Unity_ManageEditor`), reproduce the exact steps that originally triggered the bug, capture with `Unity_Camera_Capture` or `Unity_SceneView_Capture2DScene`. Confirm correct behaviour.
+2. **Play Mode verification is the user's job, not Claude's.** Do not drive gameplay or player-controlled interactions yourself — the user has controls the agent doesn't. Claude may briefly enter Play Mode or take a screenshot for a quick look at UI/frontend state, but reproducing the original bug's repro steps and confirming correct behaviour in-game is the user's task.
 
-3. **Regression check:** Briefly exercise any system the fix touched to confirm no adjacent behaviour broke.
+3. Exit Play Mode (if Claude entered it for a quick look).
 
-4. Exit Play Mode.
-
-5. **Summarise to the user:**
+4. **Summarise to the user:**
    - Root cause (file, line, why it was wrong).
    - What was changed and why that option was chosen.
    - Any **[USER ACTION REQUIRED]** steps still outstanding.
    - Any follow-up risks (e.g. "this fix works but the same pattern appears in `ALUStation.cs:82` — consider fixing there too").
-   - Output a **[USER TEST REQUIRED]** block with explicit step-by-step instructions to confirm the fix in-game.
+   - Output a **[USER TEST REQUIRED]** block with explicit step-by-step instructions the user should follow in-game to confirm the fix, reproducing the original bug's repro steps and stating what to observe.
 
 ---
 
@@ -151,7 +149,7 @@ Do not close the loop until you have confirmed the bug is gone and nothing else 
 | Write/overwrite a script | `Unity_ManageScript` |
 | Add/remove/configure component | `Unity_ManageGameObject` |
 | Open/save scene | `Unity_ManageScene` |
-| Enter/exit Play Mode | `Unity_ManageEditor` |
+| Enter/exit Play Mode (brief UI-only check — not for driving gameplay) | `Unity_ManageEditor` |
 | Screenshot (Game view) | `Unity_Camera_Capture` |
 | Screenshot (Scene view) | `Unity_SceneView_Capture2DScene` |
 | Run a menu command | `Unity_RunCommand` |

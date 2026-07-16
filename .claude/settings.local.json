@@ -19,7 +19,8 @@
       "mcp__unity-mcp__Unity_Camera_Capture",
       "mcp__unity-mcp__Unity_CreateScript",
       "mcp__unity-mcp__Unity_ManageEditor",
-      "Bash(git *)"
+      "Bash(git *)",
+      "WebSearch"
     ]
   }
 }
