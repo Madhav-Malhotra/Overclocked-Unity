@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class LevelManager : MonoBehaviour
 {
@@ -37,12 +38,28 @@ void Awake()
 
 void Start()
     {
-        if (playerController == null)
-            playerController = FindFirstObjectByType<PlayerController>();
-        if (playerInput == null)
-            playerInput = FindFirstObjectByType<UnityEngine.InputSystem.PlayerInput>();
-
+        SceneManager.sceneLoaded += OnSceneLoaded;
+        FindPlayerReferences();
         LoadLevel(LevelTransferData.NextLevelIndex);
+    }
+
+    void OnDestroy()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        if (scene.name != "Playground") return;
+
+        FindPlayerReferences();
+        LoadLevel(LevelTransferData.NextLevelIndex);
+    }
+
+    private void FindPlayerReferences()
+    {
+        playerController = FindFirstObjectByType<PlayerController>();
+        playerInput = FindFirstObjectByType<UnityEngine.InputSystem.PlayerInput>();
     }
 
     void Update()
