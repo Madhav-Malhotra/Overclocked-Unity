@@ -1,10 +1,15 @@
-- Validation logic is broken
-- Retry button doesn't work
 - Success screen has logo offcentre
-- There seems to be a mystery `unity/Assets/CPUWrapper/level1.txt` file that's being used instead of the `unity/Assets/Levels` files. 
-- How do the level json files have R1, R2, etc. instead of x1, x2, etc.?
-- Edge case: press T while carrying brick. 
 - Edge case: person takes brick off spawn, but we have a stall expected when they press T to validate. Then, they can't put their brick back on spawn since another brick has replaced
 
-Need to update skill so that it doesn't edit files with tool calls
 Need to update skill so that it always gives me file names and line numbers to look at.
+
+- KNOWN NATIVE BUG (worked around, not fixed): calling cpu.Dispose() (Assets/CPUWrapper/CPU.cs)
+  -> cleanup_design_wrapper() -> design->final() (verilator/bridge.cpp) hangs the Unity Editor
+  completely (freeze, zero console output, must force-quit). Reproduced with a full computer
+  restart, so it's not an orphaned-process/locked-DLL issue — it's a real bug in the native
+  Verilator teardown path. Workaround in place: CPUController.InitCPU() never calls Dispose(),
+  just drops the old `cpu` reference and lets a new CPU(instructions) take over (same pattern
+  OnDestroy() already used via GC.SuppressFinalize without Dispose()). This leaks the old
+  native Verilated model on every level reload — acceptable for now given how few reloads
+  happen per session, but should be fixed properly in bridge.cpp eventually (investigate
+  design->final() — possibly hangs on trace/waveform flush or re-entrant finalize).

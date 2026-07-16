@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -6,7 +7,13 @@ public class LevelManager : MonoBehaviour
 {
     public static LevelManager Instance { get; private set; }
 
-    [SerializeField] private TextAsset[] levelJsonFiles;
+    // Auto-discovered from Assets/Levels/Resources/JSON/*.json, sorted by
+    // filename (e.g. level_01, level_02, ...) so new levels need no Editor
+    // wiring beyond the Resources import step. Scoped to the "JSON"
+    // subfolder specifically (not Resources.LoadAll("")) so this doesn't
+    // also pick up unrelated TextAssets from other Resources folders in
+    // the project (e.g. TextMesh Pro's line-breaking rule assets).
+    private TextAsset[] levelJsonFiles;
 
     [SerializeField] private PlayerController playerController;
     [SerializeField] private UnityEngine.InputSystem.PlayerInput playerInput;
@@ -24,6 +31,7 @@ public class LevelManager : MonoBehaviour
     public int TotalCount => totalCount;
     public int CurrentLevelIndex => currentLevelIndex;
     public bool LevelActive => levelActive;
+    public int TotalLevelCount => levelJsonFiles?.Length ?? 0;
 
 void Awake()
     {
@@ -34,6 +42,11 @@ void Awake()
         }
         Instance = this;
         DontDestroyOnLoad(gameObject);
+
+        levelJsonFiles = Resources.LoadAll<TextAsset>("JSON")
+            .OrderBy(asset => asset.name)
+            .ToArray();
+        Debug.Log($"LevelManager: discovered {levelJsonFiles.Length} level(s): {string.Join(", ", levelJsonFiles.Select(asset => asset.name))}");
     }
 
 void Start()
@@ -101,6 +114,11 @@ public void LoadLevel(int index)
 
         StartPlatform startPlatform = FindFirstObjectByType<StartPlatform>();
         startPlatform?.SpawnNextInstruction();
+    }
+
+    public InstructionData[] GetCurrentLevelInstructions()
+    {
+        return currentLevelData?.instructions;
     }
 
     public InstructionData GetNextInstruction()

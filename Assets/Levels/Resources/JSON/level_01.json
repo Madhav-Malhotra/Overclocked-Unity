@@ -1,0 +1,10 @@
+{
+  "levelName": "Level 1",
+  "timeLimit": 60,
+  "instructions": [
+    {
+      "label": "add x1, x2, x3",
+      "hex": "0x003100B3"
+    }
+  ]
+}

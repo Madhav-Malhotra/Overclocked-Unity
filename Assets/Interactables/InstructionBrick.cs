@@ -55,6 +55,8 @@ private void Update()
     
     public uint InstructionPc { get; private set; }
     public void SetInstructionPc(uint pc) { InstructionPc = pc; }
+    public uint InstructionHex { get; private set; }
+    public void SetInstructionHex(uint hex) { InstructionHex = hex; }
 public PipelineStage CurrentStage => currentStage;
 
     public override bool CanBeHighlighted()

@@ -3,7 +3,8 @@ using System;
 [Serializable]
 public class InstructionData
 {
-    public string id;
+    public string label;
+    public string hex;
 }
 
 [Serializable]

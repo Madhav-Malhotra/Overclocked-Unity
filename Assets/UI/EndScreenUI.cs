@@ -43,6 +43,10 @@ public class EndScreenUI : MonoBehaviour
         if (successStatText != null) successStatText.text = stat;
         successPanel?.SetActive(true);
         failurePanel?.SetActive(false);
+
+        bool hasNextLevel = LevelManager.Instance != null
+            && LevelTransferData.NextLevelIndex + 1 < LevelManager.Instance.TotalLevelCount;
+        nextLevelButton?.gameObject.SetActive(hasNextLevel);
     }
 
     private void ShowFailure(string stat)

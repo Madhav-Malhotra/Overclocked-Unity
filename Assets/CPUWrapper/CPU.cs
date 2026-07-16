@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.IO;
 using System.Runtime.InteropServices;
 using UnityEngine;
@@ -143,6 +144,30 @@ class CPU : IDisposable
         }
     }
 
+    // WriteIMem loads already-assembled hex instructions (e.g. from level JSON) directly into imem
+    public static void writeIMem(InstructionData[] instructions) {
+        if (instructions == null) return;
+
+        uint currentAddr = 0x01000000; // Base addr of imem
+        int loaded = 0;
+        foreach (InstructionData instr in instructions)
+        {
+            if (string.IsNullOrEmpty(instr.hex))
+            {
+                Debug.LogError($"CPU: instruction '{instr.label}' is missing a 'hex' field");
+                currentAddr += 4;
+                continue;
+            }
+
+            string cleanHex = instr.hex.StartsWith("0x") ? instr.hex.Substring(2) : instr.hex;
+            uint instruction = uint.Parse(cleanHex, NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+            set_imem(currentAddr, instruction);
+            currentAddr += 4;
+            loaded++;
+        }
+        Debug.Log($"Successfully loaded {loaded} instructions into IMEM.");
+    }
+
     public uint GetALUOut() {
         get_cpu_state(out this.state);
         return this.state.aluOut;
@@ -171,6 +196,13 @@ class CPU : IDisposable
         this.state = new CPUState();
         init_design_wrapper();
         writeIMem(path);
+    }
+
+    // Constructor (initialized with already-assembled instructions, e.g. from level JSON)
+    public CPU (InstructionData[] instructions) {
+        this.state = new CPUState();
+        init_design_wrapper();
+        writeIMem(instructions);
     }
 
     // Diposable interface from https://learn.microsoft.com/en-us/dotnet/api/system.idisposable?view=net-10.0

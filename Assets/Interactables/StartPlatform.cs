@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Globalization;
 using UnityEngine;
 
 public class StartPlatform : Table
@@ -39,6 +40,20 @@ public class StartPlatform : Table
         }
 
         brick.SetInstructionPc(ImemBaseAddr + (uint)(_spawnIndex * 4));
+
+        if (!string.IsNullOrEmpty(next.hex))
+        {
+            string cleanHex = next.hex.StartsWith("0x") ? next.hex.Substring(2) : next.hex;
+            if (uint.TryParse(cleanHex, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out uint hexValue))
+            {
+                brick.SetInstructionHex(hexValue);
+            }
+            else
+            {
+                Debug.LogError($"StartPlatform: could not parse hex '{next.hex}' for instruction '{next.label}'");
+            }
+        }
+
         _spawnIndex++;
         PlaceBrick(brick);
     }

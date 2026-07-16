@@ -1,6 +1,4 @@
 using System;
-using System.IO;
-using System.Runtime.InteropServices;
 using UnityEngine;
 
 public class CPUController : MonoBehaviour
@@ -10,12 +8,32 @@ public class CPUController : MonoBehaviour
 
     void Start()
     {
+        InstructionData[] instructions = LevelManager.Instance != null
+            ? LevelManager.Instance.GetCurrentLevelInstructions()
+            : null;
+
+        InitCPU(instructions);
+    }
+
+    // Re-initializes the CPU with a new level's instructions (e.g. on retry or level switch).
+    // LevelManager calls this so IMEM is reloaded with the correct level rather than staying stale.
+    //
+    // Deliberately does NOT call cpu.Dispose() on the old instance before reassigning —
+    // see bugs.todo: cpu.Dispose() -> cleanup_design_wrapper() -> design->final() hangs the
+    // Editor (freezes with zero console output). OnDestroy() below has the same workaround
+    // (GC.SuppressFinalize without Dispose). init_design_wrapper() is safe to call again on
+    // an already-live design (it no-ops the allocation and just re-runs reset), so we just
+    // drop the old CPU reference and let a new one take over; the old native model leaks
+    // for the lifetime of the process instead of being freed.
+    public void InitCPU(InstructionData[] instructions)
+    {
+        cpu = null;
+
         try
         {
-            string levelPath = ResolveLevelPath();
-            cpu = new CPU(levelPath);
+            cpu = new CPU(instructions);
             CPU.dump_imem(10);
-            Debug.Log($"CPU initialized. IMEM file: {levelPath}");
+            Debug.Log($"CPU initialized with {instructions?.Length ?? 0} instructions.");
 
             CPU.get_cpu_state(out stateB);
         }
@@ -68,21 +86,5 @@ public class CPUController : MonoBehaviour
 
         GC.SuppressFinalize(cpu);
         cpu = null;
-    }
-
-    private static string ResolveLevelPath()
-    {
-        string assetsLevel = Path.Combine(Application.dataPath, "CPUWrapper", "level1.txt");
-        if (File.Exists(assetsLevel))
-            return assetsLevel;
-
-        string repoRoot = Path.GetFullPath(Path.Combine(Application.dataPath, ".."));
-        string verilatorLevel = Path.Combine(repoRoot, "verilator", "level1.txt");
-        if (File.Exists(verilatorLevel))
-            return verilatorLevel;
-
-        throw new FileNotFoundException(
-            $"Could not find level1.txt. Checked: {assetsLevel} and {verilatorLevel}"
-        );
     }
 }
