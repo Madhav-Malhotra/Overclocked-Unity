@@ -15,11 +15,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Current Architecture
 
-The project is currently just a rudimentary player controller and interactable boxes. It needs to be developed into a full game.
+The game has a working core loop: a JSON-defined level spawns instruction bricks at the `StartPlatform`, the player carries them into `CPUStation`s representing pipeline stages, and a `CPUController`-driven `CPU` (backed by the Verilator-generated `design_wrapper` native plugin) advances the real RV32I pipeline in lockstep, validated each tick by `PipelineValidator`. See `unity/.claude/status.md` for the current file-by-file map of what lives where.
 
 ### Scripts (`Assets/`)
 
-All gameplay scripts are plain C# `MonoBehaviour` classes — no custom base classes or managers yet.
+All gameplay scripts are plain C# `MonoBehaviour` classes — no custom base classes or managers yet, aside from the `LevelManager` singleton.
 
 ### Input
 
