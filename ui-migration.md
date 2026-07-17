@@ -1,5 +1,25 @@
 # UI Migration Plan: uGUI → unity-ui-toolkit-design-system
 
+## Status (read this first)
+
+- **Phase 0: DONE.** Committed as `3a7ab4d` ("feat: vendor unity-ui-toolkit-design-system for
+  UI Toolkit migration") on `main`. See "Phase 0" section below for exactly what was installed
+  and why, including a rejected submodule approach and a real upstream bug that was patched.
+- **Phase 1 (EndScreenUI pilot): DONE.** Verified end-to-end by the user (real gameplay from
+  `MainMenu` through both success and failure paths). See "Phase 1 — actual result" below for
+  what shipped — the original Phase 1 plan in this doc predates implementation and diverges from
+  it in a few ways (folder layout, background-image handling), so treat that section's code
+  snippets as historical intent, not current state.
+- **Phase 2 (MainMenuUI): NOT STARTED.** This is the next work to do. Before starting, load the
+  `sk-design` skill for design-system class/component reference, and follow `sk-implement`'s
+  plan → confirm → implement → verify loop. Reuse `Assets/UI/Shared/DefaultPanelSettings.asset`
+  rather than creating a new PanelSettings asset — see Phase 1's actual result for why.
+- If you are a fresh session with no memory of this conversation: this file is written to be
+  self-contained. You do not need any other context to continue. Start by reading
+  `Assets/UI/EndScreen/EndScreenUI.cs` (the Phase 1 pilot, now the template for later phases),
+  `Assets/DesignSystem/docs/COMPONENTS.md`, and `Assets/DesignSystem/README.md` before touching
+  anything. Also load `sk-design` for a faster reference than re-reading the full docs.
+
 ## Goal
 
 Replace hand-positioned uGUI (sprite backgrounds + separately-placed `TextMeshProUGUI`) with
@@ -33,43 +53,74 @@ so it's the pilot; its pattern becomes the template for the rest.
 
 ---
 
-## Phase 0 — Install the design system (one-time, blocks everything else)
+## Phase 0 — Install the design system — **DONE, committed as `3a7ab4d`**
 
-1. ~~Git submodule~~ — tried first, reverted. The upstream repo's root is a full host Unity
-   project (`ProjectSettings/`, `Packages/`, `Showcase/`, `Tools/`), not just the package folder;
-   mounting the submodule directly under `Assets/` made Unity try to import that host project's
-   `ProjectSettings/XRSettings.asset` etc. as real assets, causing import errors. The README's own
-   recommended submodule setup (Option B) requires an OS-level symlink/junction outside `Assets/`,
-   which doesn't round-trip across the team's Windows/WSL/Mac/Linux split and would need re-creating
-   per clone — rejected for the same reason as before.
+Source: [sinanata/unity-ui-toolkit-design-system](https://github.com/sinanata/unity-ui-toolkit-design-system)
+(MIT license). What actually happened, in order, including two rejected approaches — kept here
+so nobody re-tries them:
 
-   **Decision: plain copy (README's Option A), done.** Cloned the repo to scratch, copied only
-   `Assets/DesignSystem/` (the actual package, `.meta` files included) into this project's
-   `Assets/DesignSystem/`, discarded the rest of the clone. This is now plain tracked source in
-   our repo — no submodule, no link, no per-OS setup step for teammates. Tradeoff accepted:
-   updating to a newer upstream version means re-cloning and manually diffing/re-copying,
-   rather than `git submodule update --remote`. Worth it here since we already needed to
-   hand-patch a bug in the package (see below) — plain ownership of the source is actually
-   the better fit, not just the fallback.
-2. **Known local patch, already applied:** `Runtime/Behaviour/DesignSystemBehaviourBase.cs` line
-   ~932 called `FindObjectsByType<TComponent>()` with no arguments; this overload doesn't exist in
-   any Unity version (it always requires a `FindObjectsSortMode` argument) — a genuine upstream
-   bug, not a version-compatibility issue. Fixed locally to
-   `FindObjectsByType<TComponent>(FindObjectsSortMode.None)`. Since we now own a plain copy (not
-   a submodule), this fix is a normal tracked change in our repo — no reapplication needed after
-   updates unless we re-copy over it. Worth filing upstream at some point (not done yet).
-3. Confirm the package imports cleanly (console check via `Unity_GetConsoleLogs` after Unity
-   picks up the new `Assets/DesignSystem` folder).
-4. **[USER ACTION REQUIRED]** Import a Google Font family via `Design System > Google Fonts`
-   menu (needed for `.ds-h1`/`.ds-body-1`/etc. typography classes to resolve — otherwise text
-   falls back silently to a default font).
-5. Duplicate `Assets/DesignSystem/Resources/UI/Themes/Dark` → a project-specific `ThemeData`
-   asset (e.g. `Assets/DesignSystem/Themes/OverclockedDark.asset`) via the Theme Configurator,
-   even if it's identical to stock Dark for now. This gives us one place to retint later without
-   touching any screen.
+1. ~~**Git submodule directly under `Assets/`**~~ — tried first, reverted. The upstream repo's
+   root is a full host Unity project (`ProjectSettings/`, `Packages/`, `Showcase/`, `Tools/`), not
+   just the package folder. Mounting the submodule at `Assets/DesignSystemVendor` made Unity try
+   to import that host project's `ProjectSettings/XRSettings.asset` etc. as real assets, throwing
+   compile/import errors serious enough to trigger Unity's "Safe Mode" prompt on project open.
+2. ~~**Submodule outside `Assets/` + OS-level symlink/junction into `Assets/DesignSystem`**~~ —
+   this is the README's own recommended "Option B" for keeping the system updatable. Rejected
+   before even trying it: the team is split across Windows, WSL, and Mac/Linux, and
+   `mklink /J` (Windows) vs `ln -s` (Mac/Linux) don't round-trip through git — the README itself
+   says to `.gitignore` the link and have each contributor recreate it after cloning. That's a
+   manual, easy-to-forget, per-machine setup step across 3+ OSes — rejected as too fragile.
+3. **Decision made: plain copy — the README's "Option A".** Cloned the upstream repo to a scratch
+   directory, copied **only** `Assets/DesignSystem/` (the actual package folder, `.meta` files
+   included so GUIDs are preserved) into this project at `Assets/DesignSystem/`, discarded the
+   rest of the scratch clone. This is now plain tracked source in our repo: no submodule, no
+   symlink, zero per-OS setup step for any teammate. Tradeoff knowingly accepted: pulling a newer
+   upstream version means re-cloning upstream and manually diffing/re-copying over any local
+   edits, rather than `git submodule update --remote`. Considered acceptable because:
+   - We already had to hand-patch a real bug in the package (next point) — plain ownership of
+     the source turned out to be the better fit anyway, not just the fallback.
+   - Additionally copied in (not part of the original package folder, fetched separately from the
+     repo root/`docs/`): `README.md`, `AGENTS.md`, `llms.txt`, and `docs/{ARCHITECTURE.md,
+     COMPONENTS.md, FONTS.md, ICONS.md, MOBILE.md}` — these live inside `Assets/DesignSystem/`
+     alongside the code so the docs travel with it. Deliberately did **not** copy
+     `CHANGELOG.md`/`CONTRIBUTING.md`/`SECURITY.md`/`CITATION.cff` (upstream-contribution-focused,
+     not useful for consuming the package).
+4. **Known upstream bug, patched locally — already applied and committed.**
+   `Assets/DesignSystem/Runtime/Behaviour/DesignSystemBehaviourBase.cs`, in `AttachToAll()`,
+   originally called `FindObjectsByType<TComponent>()` with **zero arguments**. This overload
+   does not exist in *any* Unity version — the API always requires a `FindObjectsSortMode`
+   argument — so this is a genuine bug in the vendored package's own code (not a Unity-version
+   compatibility issue; confirmed it's the only occurrence of this pattern in the whole package).
+   It surfaced as a hard compile error (`CS1501`) that forced Unity into Safe Mode on first open
+   after adding the files. Fixed to:
+   `var docs = FindObjectsByType<TComponent>(FindObjectsSortMode.None);`
+   This fix has **not** been reported upstream yet (worth doing at some point, low priority —
+   file an issue/PR against the GitHub repo above if picking this up).
+5. **Confirmed via `Unity_GetConsoleLogs`:** package imports with **zero errors**. One harmless
+   pre-existing warning remains from the package's own Editor tooling (unrelated to anything we
+   did): `ThemeConfiguratorWindow.cs(68,17): warning CS0618: 'EditorUtility.InstanceIDToObject(int)'
+   is obsolete`. Safe to ignore — Editor-only tool code, not runtime, not blocking.
+6. **Google Font imported:** used Unity menu **Design System → Google Fonts**, searched and
+   imported **Poppins** (Regular + Bold weights). Generated at
+   `Assets/Resources/DsFonts/Poppins/`: `Poppins-Regular.ttf`, `Poppins-Bold.ttf`, their `SDF.asset`
+   FontAssets, `Poppins.asset`, and `Poppins.uss` (the stylesheet to `<Style src>` after
+   `DesignSystem.uss` on any screen that wants Poppins typography — see README's Fonts section).
+   Two non-fatal warnings appeared during import ("Unable to load font face for [] font asset")
+   but file sizes/console errors were checked and are consistent with a working import; **not yet
+   visually confirmed by rendering actual text** — deliberately deferred to Phase 1, since Phase 1
+   is the first screen that will render real `.ds-h1`/`.ds-body-1` text. **When building Phase 1,
+   treat "does Poppins actually render" as part of that phase's verification, not a settled fact.**
+7. **Theme asset created:** duplicated `Assets/DesignSystem/Resources/UI/Themes/Dark.asset` (via
+   `Unity_ManageAsset` Duplicate action, so it got a fresh GUID rather than colliding) into a
+   project-owned copy at **`Assets/DesignSystem/Themes/OverclockedDark.asset`**. Currently
+   byte-for-byte identical to stock Dark — this exists purely so future retinting has one place
+   to edit without touching any screen. **Not yet attached to anything** — no scene uses a
+   `ThemeApplier` pointing at it yet; that starts in Phase 1 (see Phase 1's scene wiring step).
 
-**Verify:** open any scene, confirm no console errors from the new package, confirm the font
-asset shows up in the Design System menu.
+**Net result of Phase 0:** `Assets/DesignSystem/` exists in this repo as plain committed source,
+imports cleanly, has docs alongside the code, has a font (Poppins) and a project theme asset
+(`OverclockedDark`) ready to use. Nothing has been wired into any actual scene yet — that is
+entirely Phase 1's job.
 
 ---
 
@@ -85,9 +136,12 @@ asset shows up in the Design System menu.
 - One `UXML` file, e.g. `Assets/UI/EndScreen.uxml`, with both panels as sibling
   `VisualElement`s under one `.ds-root`, visibility toggled via `display`/`style.display`
   instead of separate GameObjects:
+  Attach both `DesignSystem.uss` and `Poppins.uss` (Poppins second, per README's Fonts section —
+  order matters, font styles must load after the base system):
   ```xml
   <ui:UXML>
     <Style src="project://database/Assets/DesignSystem/Resources/UI/Styles/DesignSystem/DesignSystem.uss" />
+    <Style src="project://database/Assets/Resources/DsFonts/Poppins/Poppins.uss" />
     <ui:VisualElement class="ds-root">
       <ui:VisualElement name="success-panel" class="ds-modal">
         <ui:Label name="success-header" class="ds-h1" />
@@ -129,10 +183,15 @@ asset shows up in the Design System menu.
 2. Assign the new `EndScreen.uxml` as its Source Asset, assign/create a `PanelSettings` asset.
 3. Remove the old `Canvas`/panel GameObjects (or leave disabled until verified, then delete).
 4. Assign `uiDocument` field on `EndScreenUI` in the Inspector.
-5. Attach the `ThemeData` asset from Phase 0 via `ThemeApplier` component on the same GameObject
-   (or call `ThemeRuntime.Apply(...)` in `Awake()` before resolving elements — decide based on
-   whether other scenes will reuse this pattern; recommend `ThemeApplier` component for
-   consistency across scenes).
+5. Attach `Assets/DesignSystem/Themes/OverclockedDark.asset` (created in Phase 0, currently
+   identical to stock Dark) via a `ThemeApplier` component (`UIDocument` variant — see
+   `Assets/DesignSystem/Runtime/Theme/Applier/UIDocument/ThemeApplier.cs`) on the same GameObject
+   as the `UIDocument` (or call `ThemeRuntime.Apply(...)` in `Awake()` before resolving elements —
+   recommend the `ThemeApplier` component for consistency, since every future screen will need
+   the same theme attached and a component is more discoverable in the Inspector than a C# call
+   buried in `Awake()`). This is the **first** scene to actually use `OverclockedDark` — if this
+   step reveals the theme needs adjusting, that's expected and fine, just note it here for the
+   next screen.
 
 ### 1.5 Verify
 1. `Unity_GetConsoleLogs` — zero new errors after script + scene changes.
@@ -143,6 +202,66 @@ asset shows up in the Design System menu.
    still trigger `SceneLoader.LoadGame` — full instructions given in Phase 4 summary once built.
 
 ---
+
+### 1.6 Phase 1 — actual result (read this instead of trusting 1.1–1.5 above)
+
+What actually shipped diverges from the original plan in several ways worth knowing before
+starting Phase 2:
+
+- **Folder layout changed mid-implementation.** The user asked for per-screen subfolders instead
+  of a flat `Assets/UI/`. Final layout:
+  ```
+  Assets/UI/
+    Shared/
+      DefaultPanelSettings.asset   ← reusable across all screens, NOT per-screen
+    EndScreen/
+      EndScreenUI.cs               ← moved from Assets/UI/EndScreenUI.cs, same GUID preserved
+      EndScreen.uxml
+    MainMenuUI.cs, GameHUD.cs, InteractionUIManager.cs, TickFeedbackUI.cs, TickButtonHandler.cs,
+    RoundedBadge.png, SceneBackgrounds/   ← still flat, not yet migrated (Phase 2/3's job)
+  ```
+  Follow this same per-screen subfolder pattern for Phase 2 (`Assets/UI/MainMenu/`) and Phase 3
+  (`Assets/UI/HUD/` — the doc's original plan to share one `UIDocument`/UXML tree across HUD +
+  prompt + toast still holds; put it under one `HUD/` folder).
+- **`DefaultPanelSettings.asset` was NOT put in `Assets/DesignSystem/`.** The user flagged that
+  `DesignSystem/` must stay reusable-components-only, not project-specific config. It lives at
+  `Assets/UI/Shared/DefaultPanelSettings.asset` instead. **Reuse this same asset for every future
+  screen's `UIDocument`** — do not create a new PanelSettings per screen unless a screen genuinely
+  needs different settings (e.g. HUD wanting a different sort order).
+- **No MCP tool can create a `PanelSettings` asset** (`Unity_ManageAsset` Create only supports
+  Folder/Material/ScriptableObject, and `PanelSettings` isn't creatable via the generic
+  ScriptableObject path either — tried and failed). This one is **[USER ACTION REQUIRED]** via
+  the Editor's `Assets → Create → UI Toolkit → Panel Settings Asset` menu, every time a new one
+  is genuinely needed (should be rare, see previous point).
+- **Design tokens don't cover "2x bigger" out of the box.** `.ds-h1`/`.ds-body-1`/button classes
+  are fixed-size (26px/14px/etc, see COMPONENTS.md's Typography table) — there's no built-in
+  "large" typography variant. Achieved via inline `style="font-size: ...px;"` overrides on top of
+  the `ds-` classes. Not wrong, just note that going bigger than the system's defaults is always
+  a manual per-element override, not a class switch.
+- **Two panels toggled by `display:none` must not share flex flow**, or the visible one's position
+  shifts depending on which sibling is hidden. Fix: both `success-panel`/`failure-panel` use
+  `position: absolute` with identical anchor offsets (`right`/`top`/`translate`), so they occupy
+  the exact same screen position regardless of which is displayed. If Phase 3's HUD trio (timer +
+  prompt + toast) ever need mutually-exclusive states in the same screen region, apply the same
+  pattern.
+- **The old uGUI background art (success-image vs failure-image) was almost lost.** The original
+  field list for migration (`successPanel`, `failurePanel`, text, buttons) didn't include the
+  background `Image`s nested inside those panels — disabling the old panels silently killed the
+  background swap too. Fixed by adding `successBackground`/`failureBackground` `GameObject`
+  fields back to `EndScreenUI.cs`, moving those two background GameObjects out to be direct
+  children of `Canvas` (so they're independent of the now-deleted old panels), and toggling them
+  in `ShowSuccess()`/`ShowFailure()` alongside the UXML panel visibility. **When migrating
+  GameHUD/InteractionUIManager/TickFeedbackUI in Phase 3, check for any similar "visual element
+  nested inside the old uGUI hierarchy that isn't an explicit serialized field" before deleting
+  old GameObjects** — the compiler won't catch a dropped visual dependency like this, only manual
+  testing will.
+- **Click handling**: uGUI's `button.onClick.AddListener(Fn)` becomes
+  `button.RegisterCallback<ClickEvent>(_ => Fn())` in UI Toolkit — different event API, not a
+  drop-in method rename.
+- **Old `SuccessPanel`/`FailurePanel` GameObjects (and their now-orphaned children — old
+  `HeaderText`, `StatText`, buttons) were deleted** after the background art was safely moved out
+  and the new UI Toolkit panels were verified working. Don't delete old uGUI GameObjects before
+  confirming nothing else (like background art) is silently depending on them.
 
 ## Phase 2 — Second screen: `MainMenuUI` (`Assets/Scenes/MainMenu.unity`)
 

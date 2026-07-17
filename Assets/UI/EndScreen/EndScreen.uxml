@@ -1,0 +1,21 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/DesignSystem/Resources/UI/Styles/DesignSystem/DesignSystem.uss" />
+    <Style src="project://database/Assets/Resources/DsFonts/Poppins/Poppins.uss" />
+    <ui:VisualElement name="root" class="ds-root ds-root--hud" style="flex-grow: 1; position: relative;">
+        <ui:VisualElement name="success-panel" class="ds-modal" style="position: absolute; right: 80px; top: 50%; translate: 0 -50%; width: 550px; padding: 48px;">
+            <ui:Label name="success-header" text="Level Complete!" class="ds-h1" style="font-size: 52px; margin-bottom: 24px;" />
+            <ui:Label name="success-stat" class="ds-body-1" style="font-size: 28px; margin-bottom: 32px;" />
+            <ui:VisualElement class="ds-modal__actions" style="flex-direction: column;">
+                <ui:Button name="next-level-btn" text="Next Level" class="ds-btn ds-btn--primary ds-btn--block ds-btn--lg" style="font-size: 28px; height: 64px; margin-bottom: 16px;" />
+                <ui:Button name="retry-btn-success" text="Retry" class="ds-btn ds-btn--ghost ds-btn--block ds-btn--lg" style="font-size: 28px; height: 64px;" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="failure-panel" class="ds-modal" style="position: absolute; right: 80px; top: 50%; translate: 0 -50%; width: 550px; padding: 48px;">
+            <ui:Label name="failure-header" text="Try Again!" class="ds-h1" style="font-size: 52px; margin-bottom: 24px;" />
+            <ui:Label name="failure-stat" class="ds-body-1" style="font-size: 28px; margin-bottom: 32px;" />
+            <ui:VisualElement class="ds-modal__actions" style="flex-direction: column;">
+                <ui:Button name="retry-btn-failure" text="Retry" class="ds-btn ds-btn--danger ds-btn--block ds-btn--lg" style="font-size: 28px; height: 64px;" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
