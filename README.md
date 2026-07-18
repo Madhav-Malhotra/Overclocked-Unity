@@ -117,12 +117,3 @@ git push origin feature/my-new-feature
 ## 🙏 Credits & Third-Party Assets
 
 The UI Toolkit design system used throughout the project's screens (`Assets/DesignSystem/`) is vendored from [sinanata/unity-ui-toolkit-design-system](https://github.com/sinanata/unity-ui-toolkit-design-system).
-
----
-
-## ✅ Quick Checklist for the Lead
-
-Before pushing this README:
-
-1. Fill in the **exact Unity version** in the Prerequisites section
-2. Verify the **UnityYAMLMerge path** matches your local Unity Hub install
