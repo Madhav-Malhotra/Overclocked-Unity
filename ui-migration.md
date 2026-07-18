@@ -10,10 +10,8 @@
   what shipped — the original Phase 1 plan in this doc predates implementation and diverges from
   it in a few ways (folder layout, background-image handling), so treat that section's code
   snippets as historical intent, not current state.
-- **Phase 2 (MainMenuUI): NOT STARTED.** This is the next work to do. Before starting, load the
-  `sk-design` skill for design-system class/component reference, and follow `sk-implement`'s
-  plan → confirm → implement → verify loop. Reuse `Assets/UI/Shared/DefaultPanelSettings.asset`
-  rather than creating a new PanelSettings asset — see Phase 1's actual result for why.
+- **Phase 2 (MainMenuUI): DONE.** Verified by the user in Play Mode. Diverged from the original
+  single-button plan — see "Phase 2 — actual result" below.
 - If you are a fresh session with no memory of this conversation: this file is written to be
   self-contained. You do not need any other context to continue. Start by reading
   `Assets/UI/EndScreen/EndScreenUI.cs` (the Phase 1 pilot, now the template for later phases),
@@ -275,6 +273,41 @@ generalizes before tackling anything with dynamic per-frame text (HUD).
 4. Verify: console check, brief screenshot check, **[USER TEST REQUIRED]** click start → confirms
    `SceneLoader.LoadGame(0)` still fires.
 
+### Phase 2 — actual result
+
+What shipped diverges from the plan above:
+
+- **Became a `.ds-modal` with 4 buttons, not a single button.** The user asked mid-implementation
+  for a proper start-menu modal (same `.ds-modal` structure as EndScreen's success panel) with
+  **Start** (`.ds-btn--primary`, highlighted) plus **Tutorial**/**Settings**/**About**
+  (`.ds-btn--ghost`) as inert stubs. `MainMenuUI.cs` wires all four via `RegisterCallback<ClickEvent>`;
+  the three stubs just `Debug.Log("<Name> not yet implemented")` — no scenes/behavior behind them yet.
+- **Folder layout**: `Assets/UI/MainMenu/MainMenuUI.cs` + `MainMenu.uxml`, script moved via `git mv`
+  (preserves GUID, same trick as EndScreenUI in Phase 1).
+- **Background stayed simple**: unlike EndScreen, `Canvas/Background` here was already a direct
+  `Canvas` child (not nested inside a panel being deleted), so no extra move-out step was needed —
+  just left it in place, toggled via `--hud` transparency on the UXML root.
+- **`add_component` MCP calls can silently no-op.** Two calls (adding `UIDocument` and
+  `ThemeApplier` to `Canvas`) returned `success: true` with the new components listed in the
+  response, but a follow-up `get_component` proved neither had actually been added — no error
+  surfaced anywhere. Root cause not diagnosed (may be related to a Unity Editor crash that
+  happened earlier in the same session, possibly from a `get_components` call). Do not fully trust
+  a bare `success: true` from `add_component` for this project going forward — verify with
+  `get_component` before proceeding, especially after any recent Editor instability. Component
+  addition eventually had to be done manually in the Editor by the user (right-click → Add
+  Component); MCP `add_component` worked fine on a second attempt after that.
+- **Field wiring done entirely by hand.** Beyond the known `PanelSettings`/`Source Asset`
+  MCP limitation (Phase 1), this phase also hit the `add_component` reliability issue above, so all
+  four fields (`UIDocument.Panel Settings`, `UIDocument.Source Asset`, `ThemeApplier.Theme`,
+  `MainMenuUI.Ui Document`) were wired manually by the user via drag-and-drop in the Inspector.
+- **Left-aligned button text needs an explicit override.** `.ds-btn--block` stretches buttons full
+  width, but text stays center-aligned by default — looked mismatched against the left-aligned
+  title. Fixed with `-unity-text-align: middle-left; padding-left: 24px;` inline on each button.
+- **Old `StartButton`/`TitleText` uGUI GameObjects deleted** after the new UXML panel was verified
+  working — same pattern as Phase 1's EndScreen cleanup. Checked first that nothing was nested
+  inside them beyond their own child `Label` (no implicit background-art dependency like Phase 1
+  had).
+
 ---
 
 ## Phase 3 — HUD + prompt + toast (`Assets/Scenes/Playground.unity`)
@@ -314,6 +347,8 @@ overlay chrome during gameplay. Still implement/verify as three logical units pe
    (prompt text swap), trigger a validation error (toast appears + auto-hides), let timer run
    (confirms `Update()` still ticks correctly through the new `Label` refs).
 
+At the end, update main README.md with citation to the upstream design system repo.
+
 ---
 
 ## Explicitly deferred (not part of this migration)
@@ -327,9 +362,9 @@ overlay chrome during gameplay. Still implement/verify as three logical units pe
 ## Order of execution
 
 1. Phase 0 (install) — blocks everything, do first, confirm with user before Phase 1.
-2. Phase 1 (`EndScreenUI` pilot) — present as its own plan-confirm-implement-verify cycle before Phase 2.
-3. Phase 2 (`MainMenuUI`) — same cycle.
-4. Phase 3 (`Playground` HUD trio) — same cycle, one sub-screen at a time (3.1 → 3.2 → 3.3).
+2. Phase 1 (`EndScreenUI` pilot) — present as its own plan-confirm-implement-verify cycle before Phase 2. **DONE.**
+3. Phase 2 (`MainMenuUI`) — same cycle. **DONE.**
+4. Phase 3 (`Playground` HUD trio) — same cycle, one sub-screen at a time (3.1 → 3.2 → 3.3). **NEXT.**
 
 Each phase gets its own confirmation checkpoint per sk-implement's Phase 1 rule — this document
 is the overall roadmap, not a substitute for per-phase plan approval.
