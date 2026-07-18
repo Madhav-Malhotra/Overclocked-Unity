@@ -1,16 +1,25 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using TMPro;
+using UnityEngine.UIElements;
 
 public class TickFeedbackUI : MonoBehaviour
 {
-    public GameObject panel;
-    public TextMeshProUGUI messageText;
+    [SerializeField] private UIDocument uiDocument;
     [SerializeField] private float autohideDuration = 3f;
 
+    private VisualElement toastPanel;
+    private Label toastMessage;
     private Coroutine autohideCoroutine;
-public void ShowErrors(List<ValidationError> errors)
+
+    void Awake()
+    {
+        var root = uiDocument.rootVisualElement;
+        toastPanel = root.Q<VisualElement>("toast-panel");
+        toastMessage = root.Q<Label>("toast-message");
+    }
+
+    public void ShowErrors(List<ValidationError> errors)
     {
         if (errors == null || errors.Count == 0) return;
 
@@ -19,11 +28,11 @@ public void ShowErrors(List<ValidationError> errors)
 
         var first = errors[0];
 
-        if (messageText != null)
-            messageText.text = first.message;
+        if (toastMessage != null)
+            toastMessage.text = first.message;
 
-        if (panel != null)
-            panel.SetActive(true);
+        if (toastPanel != null)
+            toastPanel.style.display = DisplayStyle.Flex;
 
         autohideCoroutine = StartCoroutine(AutoHide());
     }
@@ -36,8 +45,8 @@ public void ShowErrors(List<ValidationError> errors)
             autohideCoroutine = null;
         }
 
-        if (panel != null)
-            panel.SetActive(false);
+        if (toastPanel != null)
+            toastPanel.style.display = DisplayStyle.None;
     }
 
     private IEnumerator AutoHide()

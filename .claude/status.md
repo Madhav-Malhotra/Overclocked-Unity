@@ -8,7 +8,7 @@
 
 **Levels** (`Assets/Levels/`): levels are JSON files auto-discovered from `Assets/Levels/Resources/JSON/level_NN.json` via `LevelManager.cs` (`Assets/Scripts/`, also owns `LevelData.cs`/`LevelTransferData.cs`); `add_hex.py` (`make hex`) assembles each instruction's RISC-V `label` into a `hex` field with `riscv64-unknown-elf-as`/`objcopy` — see `Assets/Levels/README.md` for the new-level workflow.
 
-**UI** (`Assets/UI/`): `InteractionUIManager.cs` (HUD prompt), `GameHUD.cs` (top-left countdown + m/n progress badges), `EndScreenUI.cs` (success/failure overlay), `TickButtonHandler.cs` + `TickFeedbackUI.cs` (manual tick-advance button and feedback); `Assets/UI/RoundedBadge.png` (sliced sprite for badge backgrounds, border=26); font: `Assets/Fonts/Fredoka new.asset`.
+**UI** (`Assets/UI/`): migrated to UI Toolkit on the vendored [unity-ui-toolkit-design-system](https://github.com/sinanata/unity-ui-toolkit-design-system) (`Assets/DesignSystem/`, see `ui-migration.md`). `Assets/UI/HUD/`: `HUD.uxml` (one shared tree — timer/progress badges top-left, toast bottom-left, prompt bottom-right), `GameHUD.cs`, `InteractionUIManager.cs`, `TickFeedbackUI.cs`, `TickButtonHandler.cs`. `Assets/UI/EndScreen/`: `EndScreenUI.cs` + `EndScreen.uxml` (success/failure overlay, `EndScreen.unity`). `Assets/UI/MainMenu/`: main menu screen. `Assets/UI/Shared/`: shared `PanelSettings`/theme assets. Font: Poppins (`Assets/Resources/DsFonts/Poppins/`).
 
 **Scripts** (`Assets/Scripts/`): `CircuitTrace.cs` + `CircuitTraceSpawner.cs` (decorative circuit line visuals), `LevelManager.cs` / `LevelData.cs` / `LevelTransferData.cs` (level loading, see Levels above).
 

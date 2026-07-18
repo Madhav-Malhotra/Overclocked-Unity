@@ -12,6 +12,10 @@
   snippets as historical intent, not current state.
 - **Phase 2 (MainMenuUI): DONE.** Verified by the user in Play Mode. Diverged from the original
   single-button plan — see "Phase 2 — actual result" below.
+- **Phase 3 (HUD trio): IN PROGRESS, NOT DONE.** Code is written and compiles clean (zero
+  diagnostics from `Unity_ValidateScript`, zero console errors from the script side). Scene
+  wiring is incomplete and **one known bug is still live** — see "Phase 3 — current status and
+  open items" below for the exact next steps. Do not re-do the code; pick up from scene wiring.
 - If you are a fresh session with no memory of this conversation: this file is written to be
   self-contained. You do not need any other context to continue. Start by reading
   `Assets/UI/EndScreen/EndScreenUI.cs` (the Phase 1 pilot, now the template for later phases),
@@ -347,7 +351,107 @@ overlay chrome during gameplay. Still implement/verify as three logical units pe
    (prompt text swap), trigger a validation error (toast appears + auto-hides), let timer run
    (confirms `Update()` still ticks correctly through the new `Label` refs).
 
-At the end, update main README.md with citation to the upstream design system repo.
+At the end, delete old/unused files from the older visual system. Also, update main README.md with citation to the upstream design system repo.
+
+### Phase 3 — current status and open items (read this before doing anything else in Phase 3)
+
+**What shipped, diverging from the plan above:** implemented as one shared `UIDocument`/UXML tree
+(not three separate documents) per the plan's own suggestion. Positioning differs from the
+original per-component plan based on user's explicit layout call: timer + progress are two
+stacked pill/card badges **top-left** (not generic placement), the validation-error toast is
+**bottom-left** (not wherever `.ds-toast` defaults to), and the interact prompt is plain text
+**bottom-right** (not a `.ds-chip` pill — user said plain text is fine here).
+
+**Files (final locations, all under one `HUD/` folder per the Phase 1 folder-layout convention):**
+- `Assets/UI/HUD/HUD.uxml` — one `.ds-root .ds-root--hud` tree with `top-left-stack` (containing
+  `timer-badge`/`progress-badge`, each a `.ds-card .ds-card--elevated` wrapping a `.ds-h2` Label —
+  **not** `.ds-badge`, which was tried first and rejected: `.ds-badge` is a fixed ~22px pill that
+  wouldn't accommodate 2x-scaled text or show a real background once padded/resized), a
+  `toast-panel` (`.ds-toast .ds-toast--danger`, `display: none` by default) bottom-left, and a
+  bare `prompt-label` (`.ds-body-1`) bottom-right toggled via `style.opacity`.
+- `Assets/UI/HUD/GameHUD.cs`, `InteractionUIManager.cs`, `TickFeedbackUI.cs` — moved via `git mv`
+  from flat `Assets/UI/`, GUIDs preserved. All three take a single `[SerializeField] UIDocument`
+  instead of the old `TextMeshProUGUI`/`CanvasGroup`/`GameObject` fields. **Public API kept
+  100% stable on purpose** — `GameHUD.SetVisible(bool)`, `InteractionUIManager.ShowPrompt`/
+  `HidePrompt`/`UpdatePrompt`, `TickFeedbackUI.ShowErrors`/`Hide` all keep their original
+  signatures, because `PlayerInteractionHandler.cs` (`uiManager` field) and
+  `TickButtonHandler.cs` (`feedbackUI` field, lives on the `CPUWrapper` GameObject) call these
+  from outside and were confirmed via grep to only call these public methods, never touch
+  internals. This means **no changes were needed to `PlayerInteractionHandler.cs` or
+  `TickButtonHandler.cs` themselves** — only their Inspector *references* need repointing (see
+  open items below), not their code.
+- All three scripts validated clean via `Unity_ValidateScript` (zero diagnostics) and produced
+  zero new console errors/warnings at the time of writing.
+
+**Scene wiring done so far (`Playground.unity`):**
+- New `HUD` GameObject created at the scene root (sibling of `Canvas`, `Player`, etc.) with
+  `UIDocument` (Source Asset → `HUD.uxml`, Panel Settings → `Assets/UI/Shared/DefaultPanelSettings.asset`),
+  `ThemeApplier` (Theme → `Assets/DesignSystem/Themes/OverclockedDark.asset`), and all three
+  scripts above added, each with their `Ui Document` field pointing at the `HUD` GameObject itself.
+- `PlayerInteractionHandler`'s `uiManager` field was repointed to the new `HUD` GameObject —
+  **done, confirmed working** (no separate confirmation captured, but no further complaint from
+  the user about the prompt not appearing).
+- Old `Canvas → InteractionPromptPanel` and `Canvas → GameHUD` (with children `TimerBadge/TimerText`,
+  `ProgressBadge/ProgressText`, `TickFeedbackPanel/ErrorMessageText`) were confirmed via
+  `Unity_ManageScene` `GetHierarchy` to contain **only text children, no nested background
+  Image/art**. **Deleted** (via instance ID, since `Canvas` is inactive and `by_path` lookup
+  doesn't find children of an inactive root) and scene saved.
+
+**🔴 OPEN BUG — must fix first, blocks toast verification:**
+`TickButtonHandler` (on the `CPUWrapper` GameObject, top-level in the Hierarchy) has a
+`Feedback UI` field that **still points at the old, now-inactive `TickFeedbackPanel`** GameObject
+instead of the new `HUD` GameObject's `TickFeedbackUI` component. Symptom: triggering a tick
+validation error throws
+`Coroutine couldn't be started because the game object 'TickFeedbackPanel' is inactive!` from
+`TickFeedbackUI.ShowErrors` (`Assets/UI/HUD/TickFeedbackUI.cs:37`), because `StartCoroutine`
+requires an active host GameObject and the old panel was disabled as part of the migration.
+- **Attempted fix via MCP twice, both failed.** `Unity_ManageGameObject` `set_component_property`
+  with a `{"find": "HUD", "component": "TickFeedbackUI"}` reference dict returned
+  `"Property 'feedbackUI' not found. Did you mean: feedbackUI?"` — this is the same known
+  `UnityEngine.Object`-reference-field JSON deserialization bug already documented in Phase 2's
+  actual-result notes, now confirmed to also affect `set_component_property` (not just
+  `add_component`'s field-assignment path). **Do not keep retrying this via MCP** — go straight
+  to manual.
+- **User was asked to fix this manually once already** (drag `HUD` into `CPUWrapper`'s
+  `Tick Button Handler` → `Feedback UI` field) but a follow-up `get_component` check showed the
+  field was **still** pointing at old `TickFeedbackPanel` (instanceID `58638`) — so either the
+  drag didn't take, was applied to the wrong field/component, or the scene wasn't saved
+  afterward. **This is the very next thing to resolve when picking this back up**: re-verify with
+  `Unity_ManageGameObject` `get_component` on `CPUWrapper`'s `TickButtonHandler` after the user
+  says they've fixed it, don't just trust a verbal confirmation, since it silently failed once
+  already.
+- Session ended (Unity MCP crashed, user restarting Editor) before this could be re-verified or
+  retried. **Next session: start here.**
+
+**Other known-good fixes already applied, awaiting in-Editor visual re-verification:**
+- Text sizing: user reported all HUD text (badges, toast, prompt) needed to be roughly 2x the
+  design system's default sizes. Applied inline `font-size` overrides: `.ds-h2` labels
+  20px→40px, toast message + prompt label 14px→28px, toast icon 18px→36px — same
+  "no built-in large variant, override inline" pattern already noted in Phase 1's actual-result
+  section.
+- Pillbox background: user reported the timer/progress originally looked like "floating text"
+  with no visible rounded-rectangle background. Root cause: `.ds-badge` is a small fixed-height
+  (~22px) pill class that doesn't survive being stretched/repadded for 2x text — switched to
+  `.ds-card .ds-card--elevated` (a real padded panel class) with `border-radius: 24px` inline to
+  get the pill look at the larger size. **The user separately hand-edited this file after that
+  fix** to add `width: 200px;` to both `timer-badge`/`progress-badge` (visible in the current
+  on-disk `HUD.uxml` as of this note) — respect that width choice, don't revert it.
+- **Applied**: text inside the timer/progress pillboxes is now centered. Added
+  `align-items: center; justify-content: center;` to `timer-badge`/`progress-badge` and
+  `-unity-text-align: middle-center;` to the inner `timer-label`/`progress-label` Labels. Not yet
+  visually re-verified in-Editor.
+
+**Also still unverified end-to-end (blocked on the bug above, then needs a fresh Play Mode pass):**
+walk around → prompt appears/disappears bottom-right on pickup/place, timer counts down top-left,
+progress badge increments top-left, tick validation error → red toast appears bottom-left and
+auto-hides after ~3s. None of this has been confirmed working after the sizing/pillbox fixes —
+re-verify all of it together once the `feedbackUI` wiring bug is actually fixed.
+
+**Console spam tangent (resolved, unrelated to this migration):** a
+`TLS Allocator .../Matrix4x4.cpp` allocator-leak spam appeared once in Play Mode, with no C#
+stack trace anywhere in it. Isolated via `git stash`/`git stash pop` to be **unrelated to Phase 3's
+code** — did not reproduce after an Editor restart. If it recurs, it's a pre-existing Unity
+6000.3.6f1 Editor/native issue, not something to debug by re-touching the HUD scripts.
 
 ---
 

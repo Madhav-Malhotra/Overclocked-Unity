@@ -1,0 +1,19 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/DesignSystem/Resources/UI/Styles/DesignSystem/DesignSystem.uss" />
+    <Style src="project://database/Assets/Resources/DsFonts/Poppins/Poppins.uss" />
+    <ui:VisualElement name="root" class="ds-root ds-root--hud" style="flex-grow: 1; position: relative;">
+        <ui:VisualElement name="top-left-stack" style="position: absolute; left: 36px; top: 36px; flex-direction: column;">
+            <ui:VisualElement name="timer-badge" class="ds-card ds-card--elevated" style="margin-bottom: 12px; align-self: flex-start; padding: 12px 24px; border-radius: 24px; width: 250px; align-items: center; justify-content: center;">
+                <ui:Label name="timer-label" text="00:00" class="ds-h2" style="font-size: 42px; -unity-text-align: middle-center;" />
+            </ui:VisualElement>
+            <ui:VisualElement name="progress-badge" class="ds-card ds-card--elevated" style="align-self: flex-start; padding: 12px 24px; border-radius: 24px; width: 250px; align-items: center; justify-content: center;">
+                <ui:Label name="progress-label" text="0 / 0" class="ds-h2" style="font-size: 42px; -unity-text-align: middle-center;" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="toast-panel" class="ds-toast ds-toast--danger" style="position: absolute; left: 36px; bottom: 36px; display: none;">
+            <ui:VisualElement name="toast-icon" class="ds-toast__icon ds-icon ds-icon--warning" style="width: 36px; height: 36px;" />
+            <ui:Label name="toast-message" class="ds-toast__message" style="font-size: 32px;" />
+        </ui:VisualElement>
+        <ui:Label name="prompt-label" text="" class="ds-body-1" style="position: absolute; right: 30px; bottom: 30px; opacity: 0; font-size: 36px;" />
+    </ui:VisualElement>
+</ui:UXML>
