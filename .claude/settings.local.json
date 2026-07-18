@@ -20,7 +20,11 @@
       "mcp__unity-mcp__Unity_CreateScript",
       "mcp__unity-mcp__Unity_ManageEditor",
       "Bash(git *)",
-      "WebSearch"
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "mcp__unity-mcp__Unity_ManageMenuItem",
+      "WebFetch(domain:docs.unity3d.com)"
     ]
   }
 }

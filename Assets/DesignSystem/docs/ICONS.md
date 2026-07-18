@@ -145,6 +145,19 @@ white × tint_color = tint_color
 
 So every shipped SVG uses `fill="white"` and `stroke="white"`.
 
+### SVGs sourced from icon libraries (Lucide, etc.)
+
+Icon libraries like [Lucide](https://lucide.dev) ship SVGs with `stroke="currentColor"` —
+a CSS-only keyword meant to inherit color from a surrounding stylesheet in a browser. Unity's
+SVG importer has no such context and can't resolve it; the icon imports with no visible stroke
+and fails **silently** (no console warning, just an invisible glyph). Before dropping a
+library-sourced SVG into the icons folder, replace `currentColor` with `white`:
+
+```
+stroke="currentColor"  →  stroke="white"
+fill="currentColor"    →  fill="white"
+```
+
 ### Migrating black-fill icons
 
 If you have a library of black-fill SVGs, bulk-rewrite them:

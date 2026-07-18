@@ -127,6 +127,12 @@ flagged optional in `ui-migration.md` Phase 3).
 `--danger` etc). Icons auto-retint inside a hovered/active parent button — no manual `:hover`
 rules needed.
 
+**Adding a new icon (from Lucide or any other source)** — full workflow, white-fill rule, and the
+Texture-vs-VectorImage import-type pitfall are all in `ICONS.md`'s "Adding a new icon" section.
+Read that before importing anything — common mistakes (SVGs using `stroke="currentColor"` or
+`stroke="black"` instead of white, or letting Unity import as VectorImage instead of Texture)
+produce a silent failure: no console error, but the icon renders invisible or untintable.
+
 **Tabs, inputs, toggles, badges, tooltips, drag & drop** — not yet needed by anything in this
 project's migration scope, but fully documented in `COMPONENTS.md` if a future screen needs them.
 
