@@ -5,6 +5,8 @@ description: Structured debugging loop for Unity bugs. Covers systematic diagnos
 
 When invoked, execute the five-phase loop below for every bug in this Unity project. Do not jump straight to a fix — the diagnosis phases exist because Unity bugs are frequently caused by serialized field wiring, execution order, or missing references that are invisible without targeted investigation.
 
+**Transparency (see CLAUDE.md):** do this work directly — never delegate any phase to a subagent (`Agent` tool). Every claim about existing code (root cause, call chain, current behaviour) must cite an exact file name and line number, not a description.
+
 ---
 
 ## Phase 1 — Reproduce and Locate
@@ -120,7 +122,7 @@ Do not close the loop until you have confirmed the bug is gone and nothing else 
 3. Exit Play Mode (if Claude entered it for a quick look).
 
 4. **Summarise to the user:**
-   - Root cause (file, line, why it was wrong).
+   - Root cause (file, line, why it was wrong) — cite exact file name and line number.
    - What was changed and why that option was chosen.
    - Any **[USER ACTION REQUIRED]** steps still outstanding.
    - Any follow-up risks (e.g. "this fix works but the same pattern appears in `ALUStation.cs:82` — consider fixing there too").

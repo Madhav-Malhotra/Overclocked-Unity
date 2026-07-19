@@ -32,6 +32,15 @@ All gameplay scripts are plain C# `MonoBehaviour` classes — no custom base cla
 - `com.unity.ai.navigation` — NavMesh support available
 - `com.unity.textmeshpro` — Used for timer and UI labels
 
+## Transparency
+
+These rules exist so the user can verify Claude's work as it happens, not just trust a summary after the fact.
+
+- **Never launch subagents (the `Agent` tool) in this project.** Subagents run out of the user's view, which defeats the ability to check whether Claude is on the right track. Do all research, planning, and implementation directly in the main conversation.
+- **Always cite file name and line number when describing anything that currently exists in the codebase** — while planning, debugging, or summarising what was implemented (e.g. `CPUStation.cs:47`, not "the interact handler"). This applies to root causes, existing behaviour being changed, and code just written.
+- **Prefer plain `Read`/`Edit`/`Write` over Unity MCP script tools** for `.cs` files (see Unity MCP Tools below) so changes are visible as normal file diffs.
+- **Play Mode verification is the user's job, not Claude's** (see Unity MCP Tools below) — Claude hands off with specific steps rather than claiming success unverified.
+
 ## Unity-Specific Conventions
 
 - **Never rename or move assets outside the Unity Editor** — always use the Project window to keep `.meta` files in sync.

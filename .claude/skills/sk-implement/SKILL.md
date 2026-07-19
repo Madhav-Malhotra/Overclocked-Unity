@@ -5,6 +5,8 @@ description: Safe implementation loop for Unity changes that could break existin
 
 When invoked, execute the four-phase loop below for every implementation task in this Unity project. Do not skip or compress phases — the verification step exists precisely because silent breakage is common in Unity (missing references, serialized field renames, shader/URP mismatches).
 
+**Transparency (see CLAUDE.md):** do this work directly — never delegate any phase to a subagent (`Agent` tool). Every claim about existing code in the plan or summary (what exists, what's being changed) must cite an exact file name and line number, not a description.
+
 ---
 
 ## Phase 1 — Plan
@@ -74,7 +76,7 @@ Run these checks after **each logical unit** — not just at the end.
 
 When all planned changes are verified:
 
-1. List every change made (file, what changed, why).
+1. List every change made — exact file name and line number, what changed, why.
 2. List any **[USER ACTION REQUIRED]** steps that still need to be done manually in the Editor.
 3. List any **[BREAKING RISK]** items and confirm they were resolved or explicitly deferred.
 4. Note any non-obvious follow-up work (e.g. "the new serialized field `stationId` needs to be set on each CPUStation prefab instance in the scene").
