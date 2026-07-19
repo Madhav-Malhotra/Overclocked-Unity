@@ -54,6 +54,8 @@ public class StartPlatform : Table
             }
         }
 
+        brick.SetInstructionLabel(next.label);
+
         _spawnIndex++;
         PlaceBrick(brick);
     }

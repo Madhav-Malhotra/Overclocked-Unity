@@ -15,7 +15,8 @@ public class InstructionBrick : Interactable
     [Header("Bob Settings")]
     [SerializeField] private float bobAmplitude  = 0.18f;
     [SerializeField] private float bobFrequency  = 1.2f;
-    [SerializeField] private float bobBaseHeight = 0.25f;
+    [SerializeField] private float bobBaseHeight = 1.75f;
+    [SerializeField] private float bobXOffset    = -0.0f;
 
     private Table parentTable;
     private bool  _isPlaced;
@@ -49,7 +50,7 @@ private void Update()
         if (!_isPlaced) return;
         _bobPhase += Time.deltaTime * bobFrequency * Mathf.PI * 2f;
         float yOffset = Mathf.Sin(_bobPhase) * bobAmplitude;
-        transform.localPosition = new Vector3(0f, bobBaseHeight + yOffset, 0f);
+        transform.localPosition = new Vector3(bobXOffset, bobBaseHeight + yOffset, 0f);
     }
 
     
@@ -57,6 +58,16 @@ private void Update()
     public void SetInstructionPc(uint pc) { InstructionPc = pc; }
     public uint InstructionHex { get; private set; }
     public void SetInstructionHex(uint hex) { InstructionHex = hex; }
+    public string InstructionLabel { get; private set; }
+    public void SetInstructionLabel(string label) { InstructionLabel = label; }
+    public bool HasBeenDecoded { get; private set; }
+    public void MarkDecoded() { HasBeenDecoded = true; }
+    public byte DestRegAddr { get; private set; }
+    public bool HasDestRegAddr { get; private set; }
+    public void SetDestRegAddr(byte addr) { DestRegAddr = addr; HasDestRegAddr = true; }
+    public uint CapturedMemAddr { get; private set; }
+    public bool HasCapturedMemAddr { get; private set; }
+    public void CaptureMemAddr(uint addr) { CapturedMemAddr = addr; HasCapturedMemAddr = true; }
 public PipelineStage CurrentStage => currentStage;
 
     public override bool CanBeHighlighted()
@@ -100,7 +111,7 @@ public void SetParentTable(Table table)
         {
             _bobPhase = 0f;
             transform.localRotation = Quaternion.Euler(0f, 45f, 0f);
-            transform.localPosition = new Vector3(0f, bobBaseHeight, 0f);
+            transform.localPosition = new Vector3(bobXOffset, bobBaseHeight, 0f);
             // Keep kinematic while bobbing so physics doesn't fight the animation
             Rigidbody rb = GetComponent<Rigidbody>();
             if (rb != null) rb.isKinematic = true;

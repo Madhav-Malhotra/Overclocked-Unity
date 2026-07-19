@@ -1,0 +1,32 @@
+.monitor-panel {
+    width: 900px;
+    padding: 40px;
+    flex-direction: column;
+}
+
+.monitor-title {
+    margin-bottom: 24px;
+    -unity-text-align: middle-center;
+    letter-spacing: 4px;
+}
+
+.monitor-row {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding: 12px 20px;
+    background-color: rgba(0, 0, 0, 0.25);
+    border-radius: 8px;
+}
+
+.monitor-field-label {
+    font-size: 34px;
+    color: rgb(140, 200, 255);
+}
+
+.monitor-field-value {
+    font-size: 34px;
+    color: rgb(230, 230, 230);
+    -unity-text-align: middle-right;
+}

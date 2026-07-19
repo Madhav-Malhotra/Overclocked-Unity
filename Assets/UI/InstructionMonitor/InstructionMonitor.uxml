@@ -1,0 +1,24 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/DesignSystem/Resources/UI/Styles/DesignSystem/DesignSystem.uss" />
+    <Style src="project://database/Assets/Resources/DsFonts/Poppins/Poppins.uss" />
+    <Style src="project://database/Assets/UI/InstructionMonitor/InstructionMonitor.uss" />
+    <ui:VisualElement name="instruction-monitor-panel" class="ds-panel monitor-panel">
+        <ui:Label text="INSTRUCTION MONITOR" class="ds-h2 monitor-title" />
+        <ui:VisualElement name="pc-row" class="monitor-row">
+            <ui:Label name="pc-label" text="PC" class="monitor-field-label ds-weight-700" />
+            <ui:Label name="pc-value" text="--" class="monitor-field-value" />
+        </ui:VisualElement>
+        <ui:VisualElement name="inst-row" class="monitor-row">
+            <ui:Label name="inst-label" text="INST" class="monitor-field-label ds-weight-700" />
+            <ui:Label name="inst-value" text="--" class="monitor-field-value" />
+        </ui:VisualElement>
+        <ui:VisualElement name="rd-row" class="monitor-row">
+            <ui:Label name="rd-label" text="RD" class="monitor-field-label ds-weight-700" />
+            <ui:Label name="rd-value" text="--" class="monitor-field-value" />
+        </ui:VisualElement>
+        <ui:VisualElement name="addr-row" class="monitor-row">
+            <ui:Label name="addr-label" text="ADDR" class="monitor-field-label ds-weight-700" />
+            <ui:Label name="addr-value" text="--" class="monitor-field-value" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

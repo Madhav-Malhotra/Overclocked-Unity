@@ -123,6 +123,7 @@ MonoBehaviour:
   bobAmplitude: 0.12
   bobFrequency: 0.6
   bobBaseHeight: 1.6
+  bobXOffset: -0.2
 --- !u!65 &8299589273980342678
 BoxCollider:
   m_ObjectHideFlags: 0
