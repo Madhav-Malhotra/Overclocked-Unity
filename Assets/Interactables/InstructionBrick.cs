@@ -63,8 +63,9 @@ private void Update()
     public bool HasBeenDecoded { get; private set; }
     public void MarkDecoded() { HasBeenDecoded = true; }
     public byte DestRegAddr { get; private set; }
-    public bool HasDestRegAddr { get; private set; }
-    public void SetDestRegAddr(byte addr) { DestRegAddr = addr; HasDestRegAddr = true; }
+    public uint DestRegValue { get; private set; }
+    public bool HasDestReg { get; private set; }
+    public void SetDestReg(byte addr, uint value) { DestRegAddr = addr; DestRegValue = value; HasDestReg = true; }
     public uint CapturedMemAddr { get; private set; }
     public bool HasCapturedMemAddr { get; private set; }
     public void CaptureMemAddr(uint addr) { CapturedMemAddr = addr; HasCapturedMemAddr = true; }

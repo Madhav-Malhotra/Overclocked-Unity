@@ -1,0 +1,18 @@
+{
+  "levelName": "Stall",
+  "timeLimit": 150,
+  "instructions": [
+    {
+      "label": "addi x1, x0, 1",
+      "hex": "0x00100093"
+    },
+    {
+      "label": "lw x2, 0(x1)",
+      "hex": "0x0000A103"
+    },
+    {
+      "label": "addi x2, x2, 1",
+      "hex": "0x00110113"
+    }
+  ]
+}

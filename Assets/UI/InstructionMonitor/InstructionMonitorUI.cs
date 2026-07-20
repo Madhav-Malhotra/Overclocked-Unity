@@ -57,10 +57,9 @@ public class InstructionMonitorUI : MonoBehaviour
             SetText(instValue, Blank);
         }
 
-        if (brick.HasDestRegAddr)
+        if (brick.HasDestReg)
         {
-            uint regValue = cpuController != null ? cpuController.GetStateB().regs[brick.DestRegAddr] : 0;
-            SetText(rdValue, $"x{brick.DestRegAddr} = {regValue}");
+            SetText(rdValue, $"x{brick.DestRegAddr} = {brick.DestRegValue}");
         }
         else
         {

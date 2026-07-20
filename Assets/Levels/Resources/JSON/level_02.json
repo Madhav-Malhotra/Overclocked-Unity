@@ -1,18 +1,18 @@
 {
-  "levelName": "Level 2",
+  "levelName": "Pipelined Instructions",
   "timeLimit": 120,
   "instructions": [
     {
-      "label": "add x1, x2, x3",
-      "hex": "0x003100B3"
+      "label": "addi x1, x2, 1",
+      "hex": "0x00110093"
     },
     {
-      "label": "sub x4, x5, x6",
-      "hex": "0x40628233"
+      "label": "sub x4, x2, x1",
+      "hex": "0x40110233"
     },
     {
-      "label": "lw x7, 0(x8)",
-      "hex": "0x00042383"
+      "label": "sw x1, 0(x8)",
+      "hex": "0x00142023"
     }
   ]
 }

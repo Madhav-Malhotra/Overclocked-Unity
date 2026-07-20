@@ -14,3 +14,24 @@
   native Verilated model on every level reload — acceptable for now given how few reloads
   happen per session, but should be fixed properly in bridge.cpp eventually (investigate
   design->final() — possibly hangs on trace/waveform flush or re-entrant finalize).
+
+- SUSPECTED RTL BUG: decode-stage addr_rs1/addr_rs2 appear swapped/wrong for I-type
+  instructions, causing the register file's rs1 read port to return 0 instead of the
+  actual source register's value (so ALU/writeback data comes out as 0 for e.g.
+  `addi x1, x2, 1`, instead of x2's value + 1).
+  Repro: load level_01.json (single instruction `addi x1, x2, 1`, hex 0x00110093,
+  expected decode: rd=1, rs1=2, no rs2). Pick up the brick at StartPlatform, carry it
+  through Fetch -> Decode -> Execute -> Memory -> Writeback, pressing T at each station.
+  Debug logging added at Assets/UI/TickButtonHandler.cs:35-40 (the `[ALU]` log line)
+  prints a_sel/b_sel/alu_sel/addr_rs1/addr_rs2/addr_rd/data_rs1/data_rs2/imm/aluOut/
+  regs[1]/regs[2] on every tick press — enable Play Mode and watch the Console.
+  Observed at the Execute-stage tick (pc=0x01000010): addr_rs1=1, addr_rs2=2,
+  data_rs1=0, data_rs2=17825792 (=regs[2], correct stack-pointer init value).
+  Expected: addr_rs1=2 (x2, the actual source register), data_rs1=17825792.
+  Instead addr_rs1 shows 1 (x1, the *destination* register), and addr_rs2 shows what
+  should have been rs1's address. regs[2] itself is confirmed correct in the register
+  file (logged directly), so the register file's contents are fine — the bug is in
+  what address gets fed to the rs1/rs2 read ports at decode time, upstream of the
+  register file and ALU. Suspect decoder.v / pd.v's addr_rs1_dx_r / addr_rs2_dx_r
+  wiring for I-type instructions (immediate/rs2-absent case). Not yet fixed —
+  investigate verilog/design/code/decoder.v and pd.v next.
