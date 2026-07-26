@@ -3,16 +3,16 @@
   "timeLimit": 120,
   "instructions": [
     {
-      "label": "addi x1, x2, 1",
-      "hex": "0x00110093"
+      "label": "addi x5, x0, 1",
+      "hex": "0x00100293"
     },
     {
-      "label": "sub x4, x2, x1",
-      "hex": "0x40110233"
+      "label": "sub x6, x7, x5",
+      "hex": "0x40538333"
     },
     {
-      "label": "sw x1, 0(x8)",
-      "hex": "0x00142023"
+      "label": "and x7, x6, x5",
+      "hex": "0x005373B3"
     }
   ]
 }

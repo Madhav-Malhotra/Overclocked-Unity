@@ -3,8 +3,8 @@
   "timeLimit": 60,
   "instructions": [
     {
-      "label": "addi x1, x2, 1",
-      "hex": "0x00110093"
+      "label": "addi x5, x0, 1",
+      "hex": "0x00100293"
     }
   ]
 }
