@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -6,6 +7,12 @@ using UnityEngine.SceneManagement;
 public class LevelManager : MonoBehaviour
 {
     public static LevelManager Instance { get; private set; }
+
+    // Fired at the end of LoadLevel() once currentLevelData is populated. CPUController
+    // subscribes in Awake() instead of reading GetCurrentLevelInstructions() from its own
+    // Start(), since Unity does not guarantee Start() call order between components -
+    // reading in Start() raced LevelManager's own Start()->LoadLevel() and could see null.
+    public event Action<InstructionData[]> OnLevelLoaded;
 
     // Auto-discovered from Assets/Levels/Resources/JSON/*.json, sorted by
     // filename (e.g. level_01, level_02, ...) so new levels need no Editor
@@ -114,6 +121,8 @@ public void LoadLevel(int index)
 
         StartPlatform startPlatform = FindFirstObjectByType<StartPlatform>();
         startPlatform?.SpawnNextInstruction();
+
+        OnLevelLoaded?.Invoke(currentLevelData.instructions);
     }
 
     public InstructionData[] GetCurrentLevelInstructions()

@@ -32,12 +32,6 @@ public class TickButtonHandler : MonoBehaviour
         }
 
         CPUState stateB = cpuController.GetStateB();
-        Debug.Log(
-            $"[ALU] pc=0x{stateB.pc:X8} a_sel={stateB.a_sel} b_sel={stateB.b_sel} alu_sel={stateB.alu_sel} " +
-            $"addr_rs1={stateB.addr_rs1} addr_rs2={stateB.addr_rs2} addr_rd={stateB.addr_rd} " +
-            $"data_rs1={stateB.data_rs1} data_rs2={stateB.data_rs2} imm={stateB.imm} aluOut={stateB.aluOut} " +
-            $"regs[1]={stateB.regs[1]} regs[2]={stateB.regs[2]}"
-        );
 
         uint nextSpawnPc = startPlatform != null ? startPlatform.NextSpawnPc : uint.MaxValue;
         ValidateResult result = PipelineValidator.Validate(stateB, stations, nextSpawnPc);
@@ -65,6 +59,8 @@ public class TickButtonHandler : MonoBehaviour
     //     stores, which have no destination register.
     private void CaptureMonitorData(CPUState stateB)
     {
+
+        Debug.Log($"Temp latest instruction loaded: instr_fd_w={stateB.instruction}");
         foreach (var station in stations)
         {
             if (station == null || !station.HasBrick) continue;
@@ -85,7 +81,7 @@ public class TickButtonHandler : MonoBehaviour
             else if (station.AssignedStage == PipelineStage.Writeback)
             {
                 bool isStoreOp = InstructionClassifier.IsStoreOp(brick.InstructionLabel);
-                Debug.Log($"[Monitor Capture] Writeback station: pc=0x{brick.InstructionPc:X8} label='{brick.InstructionLabel}' isStoreOp={isStoreOp} addr_rd_mw={stateB.addr_rd_mw} wb_data={stateB.wb_data}");
+                Debug.Log($"[Monitor Capture] Writeback station: pc=0x{brick.InstructionPc:X8} label='{brick.InstructionLabel}' isStoreOp={isStoreOp} addr_rd_mw={stateB.addr_rd_mw}, wb_data={stateB.wb_data}");
 
                 if (!isStoreOp)
                 {

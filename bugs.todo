@@ -4,6 +4,8 @@
 
 - `bobBaseHeight` in InstructionBrick.cs doesn't seem to do anything.
 
+- `unity/Assets/CPUWrapper/CPU.cs` and `bridge/CPU.cs` are out of sync. The one under Unity/Assets has more commits.
+
 - KNOWN NATIVE BUG (worked around, not fixed): calling cpu.Dispose() (Assets/CPUWrapper/CPU.cs)
   -> cleanup_design_wrapper() -> design->final() (verilator/bridge.cpp) hangs the Unity Editor
   completely (freeze, zero console output, must force-quit). Reproduced with a full computer

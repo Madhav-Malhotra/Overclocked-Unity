@@ -96,6 +96,9 @@ class CPU : IDisposable
     public static extern void init_design_wrapper();
 
     [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl)]
+    public static extern void finish_reset();
+
+    [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl)]
     public static extern void tick();
 
     [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl)]
@@ -103,6 +106,9 @@ class CPU : IDisposable
 
     [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl)]
     public static extern void get_cpu_state(out CPUState state);
+
+    [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl)]
+    public static extern void clear_imem();
 
     [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl)]
     public static extern void set_imem(uint addr, uint instruction);
@@ -123,6 +129,7 @@ class CPU : IDisposable
     public static void writeIMem(string path) {
         try
         {
+            clear_imem();
             string[] lines = File.ReadAllLines(path);
             uint currentAddr = 0x01000000; // Base addr of imem
             foreach (string line in lines)
@@ -196,6 +203,7 @@ class CPU : IDisposable
         this.state = new CPUState();
         init_design_wrapper();
         writeIMem(path);
+        finish_reset();
     }
 
     // Constructor (initialized with already-assembled instructions, e.g. from level JSON)
@@ -203,6 +211,7 @@ class CPU : IDisposable
         this.state = new CPUState();
         init_design_wrapper();
         writeIMem(instructions);
+        finish_reset();
     }
 
     // Diposable interface from https://learn.microsoft.com/en-us/dotnet/api/system.idisposable?view=net-10.0
