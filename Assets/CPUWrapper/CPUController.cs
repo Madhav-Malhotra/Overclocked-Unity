@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class CPUController : MonoBehaviour
 {
-    private CPU cpu;
+    private ICPU cpu;
     private CPUState stateB;
 
     private bool subscribedToLevelManager;
@@ -53,11 +53,10 @@ public class CPUController : MonoBehaviour
 
         try
         {
-            cpu = new CPU(instructions);
-            CPU.dump_imem(10);
+            cpu = CPUUnityExtensions.Create(instructions);
             Debug.Log($"CPU initialized with {instructions?.Length ?? 0} instructions.");
 
-            CPU.get_cpu_state(out stateB);
+            stateB = cpu.GetState();
         }
         catch (Exception ex)
         {
@@ -75,8 +74,8 @@ public class CPUController : MonoBehaviour
             return;
         }
 
-        CPU.tick();
-        CPU.get_cpu_state(out stateB);
+        cpu.Tick();
+        stateB = cpu.GetState();
     }
 
     public void PrintCPUState()
