@@ -53,7 +53,7 @@ public class TickButtonHandler : MonoBehaviour
     // Snapshots per-instruction register/address values off the pre-advance CPU state
     // (stateB as of the START of this tick), before this tick's AdvanceTick() shifts
     // the pipeline and addr_rd_mw/wb_data start describing a different instruction.
-    //   - Memory station -> aluOut (dmem address of the instruction currently in Memory)
+    //   - Memory station -> alu_out (dmem address of the instruction currently in Memory)
     //   - Writeback station -> addr_rd_mw + wb_data (rd/value of the instruction currently
     //     in Writeback, captured once the brick has reached this station). Skipped for
     //     stores, which have no destination register.
@@ -75,7 +75,7 @@ public class TickButtonHandler : MonoBehaviour
                 bool isMemOp = InstructionClassifier.IsMemoryOp(brick.InstructionLabel);
                 if (isMemOp)
                 {
-                    brick.CaptureMemAddr(stateB.aluOut);
+                    brick.CaptureMemAddr(stateB.alu_out);
                 }
             }
             else if (station.AssignedStage == PipelineStage.Writeback)

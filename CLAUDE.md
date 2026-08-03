@@ -15,7 +15,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Current Architecture
 
-The game has a working core loop: a JSON-defined level spawns instruction bricks at the `StartPlatform`, the player carries them into `CPUStation`s representing pipeline stages, and a `CPUController`-driven `CPU` (backed by the Verilator-generated `design_wrapper` native plugin) advances the real RV32I pipeline in lockstep, validated each tick by `PipelineValidator`. See `unity/.claude/status.md` for the current file-by-file map of what lives where.
+The game has a working core loop: a JSON-defined level spawns instruction bricks at the `StartPlatform`, the player carries them into `CPUStation`s representing pipeline stages, and a `CPUController`-driven `ICPU` (backed by the Verilator-generated `design_wrapper` native plugin) advances the real RV32I pipeline in lockstep, validated each tick by `PipelineValidator`. See `unity/.claude/status.md` for the current file-by-file map of what lives where.
 
 ### Scripts (`Assets/`)
 
@@ -47,6 +47,7 @@ These rules exist so the user can verify Claude's work as it happens, not just t
 - `.unity`, `.prefab`, and `.asset` files use Unity YAML Merge (`unityyamlmerge`) — avoid manual text-editor merges on these files.
 - Binary assets (textures, audio, models) are tracked via Git LFS.
 - The `Library/` folder is local Unity cache and is gitignored — it is rebuilt on first open after cloning.
+- `Assets/CPUWrapper/CPU.cs`, `VerilatorClient.cs`, and `FPGAClient.cs` are auto-generated from `bridge/` via `make sync-unity` — never hand-edit them; edit the `bridge/` source and re-sync (see `bridge/README.md`). Unity-only logic lives in the hand-maintained `CPUUnityExtensions.cs` alongside them.
 - When setting coordinates, keep in mind that the origin (0,0) is the top left of the screen in 2D mode. Increasing X moves right, increasing Y moves down.
 
 ## Unity MCP Tools
