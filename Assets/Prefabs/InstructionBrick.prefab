@@ -120,10 +120,6 @@ MonoBehaviour:
   - {fileID: 2100000, guid: 05b80339b68994c43be6332fa6b42b37, type: 2}
   - {fileID: 2100000, guid: 3535154d8441248589510b1a490e2979, type: 2}
   currentStage: 0
-  bobAmplitude: 0.12
-  bobFrequency: 0.6
-  bobBaseHeight: 1.6
-  bobXOffset: -0.2
 --- !u!65 &8299589273980342678
 BoxCollider:
   m_ObjectHideFlags: 0

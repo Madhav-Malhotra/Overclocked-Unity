@@ -86,7 +86,7 @@ public class InstructionBrickHoldingSystem : MonoBehaviour
         }
 
         // Position at brick slot
-        heldBrick.transform.SetParent(targetTable.transform);
+        heldBrick.transform.SetParent(brickSlot);
         heldBrick.transform.position = brickSlot.position;
         heldBrick.transform.rotation = brickSlot.rotation;
 

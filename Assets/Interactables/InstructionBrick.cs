@@ -12,11 +12,10 @@ public class InstructionBrick : Interactable
     [SerializeField] private Material[] stageMaterials = Array.Empty<Material>();
     [SerializeField] private PipelineStage currentStage = PipelineStage.Unprocessed;
 
-    [Header("Bob Settings")]
-    [SerializeField] private float bobAmplitude  = 0.18f;
-    [SerializeField] private float bobFrequency  = 1.2f;
-    [SerializeField] private float bobBaseHeight = 1.75f;
-    [SerializeField] private float bobXOffset    = -0.0f;
+    private const float bobAmplitude  = 0.18f;
+    private const float bobFrequency  = 0.6f;
+    private const float bobBaseHeight = 1.0f;
+    private const float bobXOffset    = 0.0f;
 
     private Table parentTable;
     private bool  _isPlaced;

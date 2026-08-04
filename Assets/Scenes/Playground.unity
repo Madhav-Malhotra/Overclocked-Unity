@@ -2546,6 +2546,10 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 1114359729211915560, guid: 20ca1399a433145e2967ff37c2b8b6e5, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1114359729211915560, guid: 20ca1399a433145e2967ff37c2b8b6e5, type: 3}
       propertyPath: m_LocalPosition.y
       value: 1.5
       objectReference: {fileID: 0}
@@ -5163,6 +5167,7 @@ SceneRoots:
   - {fileID: 1487863605}
   - {fileID: 1966682779}
   - {fileID: 1522685111}
+  - {fileID: 1596179202}
   - {fileID: 917682814}
   - {fileID: 1307538425}
   - {fileID: 826512164}
@@ -5172,6 +5177,5 @@ SceneRoots:
   - {fileID: 336886472}
   - {fileID: 99625661}
   - {fileID: 1679757467}
-  - {fileID: 1596179202}
   - {fileID: 1231983180}
   - {fileID: 444366827}

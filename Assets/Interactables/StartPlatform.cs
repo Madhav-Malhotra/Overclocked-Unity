@@ -28,8 +28,8 @@ public class StartPlatform : Table
         }
 
         Transform slot = GetBrickSlot();
-        Vector3 spawnPos = slot != null ? slot.position : transform.position;
-        GameObject brickObj = Instantiate(instructionBrickPrefab, spawnPos, Quaternion.identity, transform);
+        Transform spawnParent = slot != null ? slot : transform;
+        GameObject brickObj = Instantiate(instructionBrickPrefab, spawnParent.position, Quaternion.identity, spawnParent);
         InstructionBrick brick = brickObj.GetComponent<InstructionBrick>();
 
         if (brick == null)

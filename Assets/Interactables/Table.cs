@@ -34,6 +34,12 @@ public class Table : Interactable
         // Initialise any brick already placed on this table in the scene (e.g. Start station).
         if (currentBrick != null)
         {
+            if (brickSlot != null)
+            {
+                currentBrick.transform.SetParent(brickSlot);
+                currentBrick.transform.position = brickSlot.position;
+                currentBrick.transform.rotation = brickSlot.rotation;
+            }
             currentBrick.SetParentTable(this);
         }
     }
@@ -117,7 +123,5 @@ protected virtual void OnBrickRemoved() { }
     {
         return brickSlot;
     }
-
-public void SetBrickSlot(Transform slot) { brickSlot = slot; }
 
 }
