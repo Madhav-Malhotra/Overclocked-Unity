@@ -1,7 +1,5 @@
 - Edge case: person takes brick off spawn, but we have a stall expected when they press T to validate. Then, they can't put their brick back on spawn since another brick has replaced
 
-- `bobBaseHeight` in InstructionBrick.cs doesn't seem to do anything. Brick float position also a bit misaligned
-
 - KNOWN NATIVE BUG (worked around, not fixed): calling cpu.Dispose() (Assets/CPUWrapper/CPU.cs)
   -> cleanup_design_wrapper() -> design->final() (verilator/bridge.cpp) hangs the Unity Editor
   completely (freeze, zero console output, must force-quit). Reproduced with a full computer
