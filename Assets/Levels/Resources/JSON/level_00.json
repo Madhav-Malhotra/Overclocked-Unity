@@ -1,7 +1,7 @@
 {
-  "levelName": "Single Instruction",
-  "sceneName": "FiveStage",
-  "timeLimit": 60,
+  "levelName": "Blackbox Intro",
+  "sceneName": "Blackbox",
+  "timeLimit": 45,
   "instructions": [
     {
       "label": "addi x5, x0, 1",

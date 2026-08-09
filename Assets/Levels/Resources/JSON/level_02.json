@@ -1,5 +1,6 @@
 {
   "levelName": "Pipelined Instructions",
+  "sceneName": "FiveStage",
   "timeLimit": 120,
   "instructions": [
     {

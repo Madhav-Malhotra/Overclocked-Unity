@@ -9,7 +9,10 @@ EditorBuildSettings:
     path: Assets/Scenes/MainMenu.unity
     guid: 8b77421480470f444ac16cf0e704bc97
   - enabled: 1
-    path: Assets/Scenes/Playground.unity
+    path: Assets/Scenes/Blackbox.unity
+    guid: 19e8a7a2580ddc048b41486df42e1ccc
+  - enabled: 1
+    path: Assets/Scenes/FiveStage.unity
     guid: fc5614ccbc239454aa3e036ab2902756
   - enabled: 1
     path: Assets/Scenes/EndScreen.unity

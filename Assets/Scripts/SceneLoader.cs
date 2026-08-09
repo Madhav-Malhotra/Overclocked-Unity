@@ -1,9 +1,9 @@
+using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public static class SceneLoader
 {
     const string MainMenuScene = "MainMenu";
-    const string GameScene = "Playground";
     const string EndScreenScene = "EndScreen";
 
     public static void LoadMainMenu()
@@ -14,7 +14,15 @@ public static class SceneLoader
     public static void LoadGame(int levelIndex)
     {
         LevelTransferData.NextLevelIndex = levelIndex;
-        SceneManager.LoadScene(GameScene);
+
+        string sceneName = LevelManager.Instance?.GetSceneNameForLevel(levelIndex);
+        if (string.IsNullOrEmpty(sceneName))
+        {
+            Debug.LogError($"SceneLoader: Could not resolve sceneName for level index {levelIndex}");
+            return;
+        }
+
+        SceneManager.LoadScene(sceneName);
     }
 
     public static void LoadEndScreen(bool success, float timeTaken, int completedCount, int totalCount, int nextLevelIndex)

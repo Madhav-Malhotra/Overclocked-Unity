@@ -40,6 +40,7 @@ public class TickButtonHandler : MonoBehaviour
         {
             feedbackUI?.Hide();
             CaptureMonitorData(stateB);
+            MarkRetiredWritebackBrick(stateB);
             cpuController.AdvanceTick();
         }
         else
@@ -59,35 +60,27 @@ public class TickButtonHandler : MonoBehaviour
     //     stores, which have no destination register.
     private void CaptureMonitorData(CPUState stateB)
     {
-
-        Debug.Log($"Temp latest instruction loaded: instr_fd_w={stateB.instruction}");
         foreach (var station in stations)
         {
             if (station == null || !station.HasBrick) continue;
-            var brick = station.CurrentBrick;
+            InstructionMonitorCapture.CaptureAtStage(station.CurrentBrick, stateB, station.AssignedStage);
+        }
+    }
 
-            if (station.AssignedStage == PipelineStage.Decode)
-            {
-                brick.MarkDecoded();
-            }
-            else if (station.AssignedStage == PipelineStage.Memory)
-            {
-                bool isMemOp = InstructionClassifier.IsMemoryOp(brick.InstructionLabel);
-                if (isMemOp)
-                {
-                    brick.CaptureMemAddr(stateB.alu_out);
-                }
-            }
-            else if (station.AssignedStage == PipelineStage.Writeback)
-            {
-                bool isStoreOp = InstructionClassifier.IsStoreOp(brick.InstructionLabel);
-                Debug.Log($"[Monitor Capture] Writeback station: pc=0x{brick.InstructionPc:X8} label='{brick.InstructionLabel}' isStoreOp={isStoreOp} addr_rd_mw={stateB.addr_rd_mw}, wb_data={stateB.wb_data}");
-
-                if (!isStoreOp)
-                {
-                    brick.SetDestReg(stateB.addr_rd_mw, stateB.wb_data);
-                }
-            }
+    // A brick only counts as fully retired once a validated tick confirms it's actually sitting
+    // at Writeback with the hardware's mw_pc for this cycle — not just because it's physically
+    // placed on the Writeback station (placement alone used to mark it processed via
+    // CPUStation's processing timer, which let players skip pressing T entirely).
+    // stateB here is the pre-tick snapshot PipelineValidator just validated against, so mw_pc
+    // still describes the instruction retiring this cycle.
+    private void MarkRetiredWritebackBrick(CPUState stateB)
+    {
+        foreach (var station in stations)
+        {
+            if (station == null || !station.HasBrick) continue;
+            if (station.AssignedStage != PipelineStage.Writeback) continue;
+            if (stateB.mw_pc == station.CurrentBrick.InstructionPc)
+                station.CurrentBrick.MarkProcessed();
         }
     }
 }

@@ -70,10 +70,26 @@ void Start()
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        if (scene.name != "Playground") return;
+        if (scene.name != GetSceneNameForLevel(LevelTransferData.NextLevelIndex)) return;
 
         FindPlayerReferences();
         LoadLevel(LevelTransferData.NextLevelIndex);
+    }
+
+    // Parses just the sceneName field of the target index's JSON, without mutating
+    // currentLevelData or any other level-active state. Used by SceneLoader (to know which
+    // scene to load) and OnSceneLoaded above (to gate against the correct scene, since
+    // currentLevelData still holds the previous level's data at the moment a scene finishes
+    // loading).
+    public string GetSceneNameForLevel(int index)
+    {
+        if (levelJsonFiles == null || index < 0 || index >= levelJsonFiles.Length)
+        {
+            return null;
+        }
+
+        LevelData data = JsonUtility.FromJson<LevelData>(levelJsonFiles[index].text);
+        return data?.sceneName;
     }
 
     private void FindPlayerReferences()

@@ -11,6 +11,7 @@ public class InstructionData
 public class LevelData
 {
     public string levelName;
+    public string sceneName;
     public float timeLimit;
     public InstructionData[] instructions;
 }

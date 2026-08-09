@@ -15,7 +15,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Current Architecture
 
-The game has a working core loop: a JSON-defined level spawns instruction bricks at the `StartPlatform`, the player carries them into `CPUStation`s representing pipeline stages, and a `CPUController`-driven `ICPU` (backed by the Verilator-generated `design_wrapper` native plugin) advances the real RV32I pipeline in lockstep, validated each tick by `PipelineValidator`. See `unity/.claude/status.md` for the current file-by-file map of what lives where.
+The game has a working core loop: a JSON-defined level (`sceneName` field) spawns instruction bricks at the `StartPlatform`, and loads one of two game scenes depending on architecture. In **FiveStage**, the player carries bricks into `CPUStation`s representing pipeline stages and presses T to tick; a `CPUController`-driven `ICPU` (backed by the Verilator-generated `design_wrapper` native plugin) advances the real RV32I pipeline in lockstep, validated each tick by `PipelineValidator`. In **Blackbox**, there are no per-stage stations — a single `BlackboxStation` places the brick and auto-advances the same `CPUController` in a coroutine until the instruction retires. Both scenes feed the instruction monitor UI through the shared `InstructionMonitorCapture` helper, and both signal level completion through `InstructionBrick.IsProcessed`, checked by `EndPlatform`. See `unity/.claude/status.md` for the current file-by-file map of what lives where.
 
 ### Scripts (`Assets/`)
 

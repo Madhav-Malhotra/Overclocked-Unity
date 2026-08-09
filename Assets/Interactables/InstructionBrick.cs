@@ -68,6 +68,8 @@ private void Update()
     public uint CapturedMemAddr { get; private set; }
     public bool HasCapturedMemAddr { get; private set; }
     public void CaptureMemAddr(uint addr) { CapturedMemAddr = addr; HasCapturedMemAddr = true; }
+    public bool IsProcessed { get; private set; }
+    public void MarkProcessed() { IsProcessed = true; }
 public PipelineStage CurrentStage => currentStage;
 
     public override bool CanBeHighlighted()

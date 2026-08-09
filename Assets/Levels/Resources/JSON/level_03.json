@@ -1,5 +1,6 @@
 {
   "levelName": "Stall",
+  "sceneName": "FiveStage",
   "timeLimit": 150,
   "instructions": [
     {

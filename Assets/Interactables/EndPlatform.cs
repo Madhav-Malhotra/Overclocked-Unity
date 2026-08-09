@@ -19,7 +19,7 @@ public class EndPlatform : Table
         if (HasBrick) return false;
 
         InstructionBrick held = HoldingSystem.GetHeldBrick();
-        return held != null && held.CurrentStage == PipelineStage.Writeback;
+        return held != null && held.IsProcessed;
     }
 
 public override void OnInteract()
