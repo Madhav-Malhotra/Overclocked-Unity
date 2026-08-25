@@ -4,7 +4,10 @@ using UnityEngine;
 public class CPUController : MonoBehaviour
 {
     private ICPU cpu;
-    private CPUState stateB;
+    // Index 0 is always valid (Basic/Blackbox use only way 0). Index 1 is populated only
+    // when the level's CPUArchitecture is Superscalar.
+    private CPUState[] statesB = new CPUState[] { default };
+    private CPUFactory.CPUArchitecture cpuArchitecture = CPUFactory.CPUArchitecture.Basic;
 
     private bool subscribedToLevelManager;
 
@@ -50,13 +53,23 @@ public class CPUController : MonoBehaviour
     public void InitCPU(InstructionData[] instructions)
     {
         cpu = null;
+        cpuArchitecture = LevelManager.Instance != null && LevelManager.Instance.CurrentLevelData != null
+            ? LevelManager.Instance.CurrentLevelData.GetCpuArchitecture()
+            : CPUFactory.CPUArchitecture.Basic;
+
+        int wayCount = cpuArchitecture == CPUFactory.CPUArchitecture.Superscalar ? 2 : 1;
+        statesB = new CPUState[wayCount];
 
         try
         {
-            cpu = CPUUnityExtensions.Create(instructions);
-            Debug.Log($"CPU initialized with {instructions?.Length ?? 0} instructions.");
+            cpu = CPUUnityExtensions.Create(instructions, CPUFactory.ImplementationType.Verilator, cpuArchitecture);
+            Debug.Log($"CPU initialized with {instructions?.Length ?? 0} instructions ({cpuArchitecture}).");
 
-            stateB = cpu.GetState();
+            for (int way = 0; way < wayCount; way++)
+            {
+                statesB[way] = cpu.GetState(way);
+                Debug.Log($"[DEBUG InitCPU] way={way} pc=0x{statesB[way].pc:X8} fd_pc=0x{statesB[way].fd_pc:X8}");
+            }
         }
         catch (Exception ex)
         {
@@ -64,7 +77,11 @@ public class CPUController : MonoBehaviour
         }
     }
 
-    public CPUState GetStateB() => stateB;
+    public CPUState GetStateB(int way = 0) => statesB[way];
+
+    // 1 for Basic/Blackbox, 2 for Superscalar — sized in InitCPU(). Lets callers (e.g.
+    // TickButtonHandler) build a per-way CPUState[] without hardcoding an architecture check.
+    public int WayCount => statesB.Length;
 
     public void AdvanceTick()
     {
@@ -75,10 +92,14 @@ public class CPUController : MonoBehaviour
         }
 
         cpu.Tick();
-        stateB = cpu.GetState();
+        for (int way = 0; way < statesB.Length; way++)
+        {
+            statesB[way] = cpu.GetState(way);
+            Debug.Log($"[DEBUG AdvanceTick] way={way} pc=0x{statesB[way].pc:X8} fd_pc=0x{statesB[way].fd_pc:X8}");
+        }
     }
 
-    public void PrintCPUState()
+    public void PrintCPUState(int way = 0)
     {
         if (cpu == null)
         {
@@ -86,10 +107,10 @@ public class CPUController : MonoBehaviour
             return;
         }
 
-        cpu.PrintState();
+        cpu.PrintState(way);
     }
 
-    public uint GetALUOutput()
+    public uint GetALUOutput(int way = 0)
     {
         if (cpu == null)
         {
@@ -97,7 +118,7 @@ public class CPUController : MonoBehaviour
             return 0;
         }
 
-        return cpu.GetALUOut();
+        return cpu.GetALUOut(way);
     }
 
     void OnDestroy()

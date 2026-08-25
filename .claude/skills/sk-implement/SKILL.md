@@ -5,7 +5,7 @@ description: Safe implementation loop for Unity changes that could break existin
 
 When invoked, execute the four-phase loop below for every implementation task in this Unity project. Do not skip or compress phases — the verification step exists precisely because silent breakage is common in Unity (missing references, serialized field renames, shader/URP mismatches).
 
-**Transparency (see CLAUDE.md):** do this work directly — never delegate any phase to a subagent (`Agent` tool). Every claim about existing code in the plan or summary (what exists, what's being changed) must cite an exact file name and line number, not a description.
+**Transparency (see CLAUDE.md):** do this work directly — never delegate any phase to a subagent (`Agent` tool). Use a todo list so the user can monitor progress at a glance. Every claim about existing code in the plan or summary (what exists, what's being changed) must cite an exact file name and line number, not a description.
 
 ---
 
@@ -38,7 +38,7 @@ Note: a short summary of the most important files in the project can be found in
 
 ## Phase 2 — Implement
 
-Work through the confirmed plan one logical unit at a time. Never batch multiple unrelated changes into a single apply.
+Create a todo list so the user can monitor your progress in implementing the plan. Work through the confirmed plan one logical unit at a time. Never batch multiple unrelated changes into a single apply.
 
 **For C# script changes:**
 1. Use plain `Read`/`Edit`/`Write` to make the change, not `Unity_ManageScript`/`Unity_ScriptApplyEdits` — this keeps changes visible to the user as normal file diffs instead of opaque MCP calls. Use `Unity_CreateScript` only when creating a brand-new file (so the `.meta` is generated correctly), then fill it in with `Write`.
@@ -81,7 +81,7 @@ When all planned changes are verified:
 3. List any **[BREAKING RISK]** items and confirm they were resolved or explicitly deferred.
 4. Note any non-obvious follow-up work (e.g. "the new serialized field `stationId` needs to be set on each CPUStation prefab instance in the scene").
 5. Output a **[USER TEST REQUIRED]** block with explicit step-by-step instructions the user must follow in-game to verify the changes work correctly (e.g. "Enter Play Mode, pick up a brick, place it on the Fetch station, press T — expect no error panel"). Be specific about what to do and what to observe. This is the primary verification step — the user drives Play Mode, not Claude.
-6. IMPORTANT: update `.claude/status.md` ONLY IF NECESSARY to let future AI agents know where to look for important files. This file must be kept small so that AI agents don't waste tokens loading it.
+6. IMPORTANT: update `.claude/status.md` WITH BRIEF REFERENCES TO KEY ARCHITECTURAL FILES to let future AI agents know where to look for important files. This file must be kept small so that AI agents don't waste tokens loading it.
 
 
 ---

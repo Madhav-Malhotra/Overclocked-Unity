@@ -39,6 +39,7 @@ public class LevelManager : MonoBehaviour
     public int CurrentLevelIndex => currentLevelIndex;
     public bool LevelActive => levelActive;
     public int TotalLevelCount => levelJsonFiles?.Length ?? 0;
+    public LevelData CurrentLevelData => currentLevelData;
 
 void Awake()
     {

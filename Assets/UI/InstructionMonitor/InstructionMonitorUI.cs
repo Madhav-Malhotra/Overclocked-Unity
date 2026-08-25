@@ -46,7 +46,7 @@ public class InstructionMonitorUI : MonoBehaviour
 
     private void Refresh(InstructionBrick brick)
     {
-        SetText(pcValue, $"0x{brick.InstructionPc:X8}");
+        SetText(pcValue, $"0x{PcHex(brick.InstructionPc)}");
 
         if (brick.HasBeenDecoded)
         {
@@ -83,4 +83,8 @@ public class InstructionMonitorUI : MonoBehaviour
             label.text = text;
         }
     }
+
+    // Shows only the rightmost 4 hex digits of a PC — full 32-bit addresses are more than
+    // players need to disambiguate instructions in these small programs.
+    private static string PcHex(uint pc) => (pc & 0xFFFF).ToString("X4");
 }

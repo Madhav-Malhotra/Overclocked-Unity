@@ -1,0 +1,24 @@
+{
+  "levelName": "SuperscalarNoStall",
+  "sceneName": "Superscalar",
+  "cpuArchitecture": "Superscalar",
+  "timeLimit": 150,
+  "instructions": [
+    {
+      "label": "addi x5, x0, 1",
+      "hex": "0x00100293"
+    },
+    {
+      "label": "addi x6, x0, -4",
+      "hex": "0xFFC00313"
+    },
+    {
+      "label": "blt x0, x0, -4",
+      "hex": "0x00005463"
+    },
+    {
+      "label": "bne x0, x0, -8",
+      "hex": "0x00000463"
+    }
+  ]
+}

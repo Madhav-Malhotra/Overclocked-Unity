@@ -2,7 +2,10 @@ using UnityEngine;
 
 /// <summary>
 /// Spawns all circuit trace lines between CPU pipeline stations at startup.
-/// Finds stations by name in the scene — no manual wiring required.
+/// Discovers stations via CPUStation.AssignedStage/AssignedWay rather than scene-object
+/// naming, so two parallel way lines sharing stage names (Superscalar) don't collide —
+/// GameObject.Find-by-name can only ever resolve one "Fetch" object.
+/// Start/End platforms are still found by name since they are shared across ways.
 /// </summary>
 public class CircuitTraceSpawner : MonoBehaviour
 {
@@ -13,9 +16,13 @@ public class CircuitTraceSpawner : MonoBehaviour
     [SerializeField] private float pulseMinIntensity = 0.6f;
     [SerializeField] private float pulseMaxIntensity = 2.5f;
 
-    private static readonly string[] StationOrder =
+    private const string StartName = "Start";
+    private const string EndName = "End";
+
+    private static readonly PipelineStage[] StageOrder =
     {
-        "Start", "Fetch", "Decode", "Execute", "Memory", "Writeback", "End"
+        PipelineStage.Fetch, PipelineStage.Decode, PipelineStage.Execute,
+        PipelineStage.Memory, PipelineStage.Writeback,
     };
 
     private void Awake()
@@ -26,36 +33,64 @@ public class CircuitTraceSpawner : MonoBehaviour
             return;
         }
 
-        for (int i = 0; i < StationOrder.Length - 1; i++)
+        CPUStation[] stations = FindObjectsByType<CPUStation>(FindObjectsSortMode.None);
+        int wayCount = 1;
+        foreach (var station in stations)
+            wayCount = Mathf.Max(wayCount, station.AssignedWay + 1);
+
+        for (int way = 0; way < wayCount; way++)
         {
-            string fromName = StationOrder[i];
-            string toName   = StationOrder[i + 1];
+            GameObject prevGO = GameObject.Find(StartName);
+            string prevLabel = StartName;
 
-            GameObject fromGO = GameObject.Find(fromName);
-            GameObject toGO   = GameObject.Find(toName);
-
-            if (fromGO == null || toGO == null)
+            foreach (PipelineStage stage in StageOrder)
             {
-                Debug.LogWarning($"[CircuitTraceSpawner] Could not find '{fromName}' or '{toName}' in scene.");
-                continue;
+                CPUStation station = FindStation(stations, stage, way);
+                if (station == null)
+                {
+                    Debug.LogWarning($"[CircuitTraceSpawner] Could not find station for stage {stage}, way {way}.");
+                    prevGO = null;
+                    continue;
+                }
+
+                if (prevGO != null)
+                    SpawnTrace($"{prevLabel}_to_{stage}_w{way}", prevGO.transform.position, station.transform.position);
+
+                prevGO = station.gameObject;
+                prevLabel = $"{stage}_w{way}";
             }
 
-            GameObject go = new GameObject($"{fromName}_to_{toName}");
-            go.transform.SetParent(transform, false);
-
-            CircuitTrace trace = go.AddComponent<CircuitTrace>();
-            trace.traceMaterial     = traceMaterial;
-            trace.lineWidth         = lineWidth;
-            trace.pulseSpeed        = pulseSpeed;
-            trace.pulseMinIntensity = pulseMinIntensity;
-            trace.pulseMaxIntensity = pulseMaxIntensity;
-
-            Vector3 fromPos = fromGO.transform.position;
-            Vector3 toPos   = toGO.transform.position;
-            fromPos.y = traceYOffset;
-            toPos.y   = traceYOffset;
-
-            trace.Setup(fromPos, toPos);
+            GameObject endGO = GameObject.Find(EndName);
+            if (prevGO != null && endGO != null)
+                SpawnTrace($"{prevLabel}_to_{EndName}", prevGO.transform.position, endGO.transform.position);
         }
+    }
+
+    private static CPUStation FindStation(CPUStation[] stations, PipelineStage stage, int way)
+    {
+        foreach (var station in stations)
+        {
+            if (station != null && station.AssignedStage == stage && station.AssignedWay == way)
+                return station;
+        }
+        return null;
+    }
+
+    private void SpawnTrace(string name, Vector3 fromPos, Vector3 toPos)
+    {
+        GameObject go = new GameObject(name);
+        go.transform.SetParent(transform, false);
+
+        CircuitTrace trace = go.AddComponent<CircuitTrace>();
+        trace.traceMaterial     = traceMaterial;
+        trace.lineWidth         = lineWidth;
+        trace.pulseSpeed        = pulseSpeed;
+        trace.pulseMinIntensity = pulseMinIntensity;
+        trace.pulseMaxIntensity = pulseMaxIntensity;
+
+        fromPos.y = traceYOffset;
+        toPos.y   = traceYOffset;
+
+        trace.Setup(fromPos, toPos);
     }
 }

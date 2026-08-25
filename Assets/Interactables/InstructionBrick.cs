@@ -55,6 +55,10 @@ private void Update()
     
     public uint InstructionPc { get; private set; }
     public void SetInstructionPc(uint pc) { InstructionPc = pc; }
+    // Which superscalar way this brick is currently routed to. Unused (always 0) outside the
+    // Superscalar scene. Not assigned at spawn — the player routes it when placing at Fetch.
+    public int Way { get; private set; }
+    public void SetWay(int way) { Way = way; }
     public uint InstructionHex { get; private set; }
     public void SetInstructionHex(uint hex) { InstructionHex = hex; }
     public string InstructionLabel { get; private set; }

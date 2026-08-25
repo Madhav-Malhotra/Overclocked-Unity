@@ -7,7 +7,7 @@ public static class CPUUnityExtensions
 {
     // Create an ICPU from already-assembled level JSON instructions (InstructionData[] is a
     // Unity-only type, see Assets/Scripts/LevelData.cs), bypassing file I/O.
-    public static ICPU Create(InstructionData[] instructions, CPUFactory.ImplementationType type = CPUFactory.ImplementationType.Verilator)
+    public static ICPU Create(InstructionData[] instructions, CPUFactory.ImplementationType type = CPUFactory.ImplementationType.Verilator, CPUFactory.CPUArchitecture cpuArch = CPUFactory.CPUArchitecture.Basic)
     {
         string[] hexInstructions = new string[instructions.Length];
         for (int i = 0; i < instructions.Length; i++)
@@ -20,6 +20,6 @@ public static class CPUUnityExtensions
             }
             hexInstructions[i] = instructions[i].hex;
         }
-        return CPUFactory.Create(hexInstructions, type);
+        return CPUFactory.Create(hexInstructions, type, cpuArch);
     }
 }

@@ -94,6 +94,17 @@ public struct CPUState
     public byte opcode_mw;
     public byte addr_rd_mw;
     public uint mw_pc;
+
+    // add multicycle multiplier signals
+    public byte mult_start_pulse;
+    public byte mult_hold;
+    public byte mult_busy;
+
+    // superscalar inter-way stalls (stall_signals.v) — always 0 for the basic (non-superscalar) bridge
+    public byte stall_0;
+    public byte stall_1;
+
+
     // overriding the ToString() function so the string representation is easier to read during debugging
     public override string ToString()
     {
@@ -107,7 +118,8 @@ public struct CPUState
             $"Signals -> eq: 0x{br_eq:X}, lt: 0x{br_lt:X}, un: 0x{br_un:X}, taken: 0x{br_taken:X} | bc_sel1: 0x{branch_comp_data1_sel:X}, bc_sel2: 0x{branch_comp_data2_sel:X} | pc_sel: 0x{pc_sel:X}, a_sel: 0x{a_sel:X}, b_sel: 0x{b_sel:X}, alu_sel: 0x{alu_sel:X1}, mem_rw: 0x{mem_rw:X}, reg_wen: 0x{reg_wen:X}, wb_sel: 0x{wb_sel:X}\n" +
             $"Decode  -> rd: 0x{addr_rd:X2}, rs1: 0x{addr_rs1:X2}, rs2: 0x{addr_rs2:X2}, f3: 0x{funct3:X1}, f7: 0x{funct7:X2}, imm: 0x{imm:X8}, shamt: 0x{shamt:X2} | types(u/j/i): {is_u_type_w}/{is_j_type_w}/{is_i_type_w}\n" +
             $"Memory  -> imem_out: 0x{imem_data_out:X8}, dmem_in: 0x{dmem_data_in:X8}, dmem_out: 0x{dmem_data_out:X8}\n" +
-            $"Pipeline-> wb_data: 0x{wb_data:X8}, wb_in_alu: 0x{wb_in_alu:X8}, mem: 0x{mem:X8}, pc4: 0x{mw_pc4:X8}";
+            $"Pipeline-> wb_data: 0x{wb_data:X8}, wb_in_alu: 0x{wb_in_alu:X8}, mem: 0x{mem:X8}, pc4: 0x{mw_pc4:X8}\n" + 
+            $"Multi-cycle Mult signals -> mult_start_pulse: 0x{mult_start_pulse:X8}, mult_hold: 0x{mult_hold:X8}, mult_busy: 0x{mult_busy:X8}";
     }
 }
 
@@ -198,7 +210,7 @@ enum Operation : byte
     NOP = 10,
 }
 
-// Bridge CPU interface to abstract FPGA/Verilator backend from Unity.
+// Bridge CPU interface to abstract FPGA/Verilator backend from Unity. - Used for basic and superscalar (way is ignored in basic case)
 public interface ICPU
 {
     // CPUState struct representing all module outputs.
@@ -212,50 +224,61 @@ public interface ICPU
     // Reset re-initializes the CPU to a clean post-reset state, ready to run from address 0x01000000.
     void Reset();
     // PrintState outputs the `state` for debugging.
-    void PrintState();
+    void PrintState(int way = 0);
     // GetState() retrieves `state` from CPU.
-    CPUState GetState();
+    CPUState GetState(int way = 0);
     // DON'T USE (deprecated):  retrieve the PC from the appropriate pipeline stage struct
-    uint GetPC();
+    uint GetPC(int way = 0);
     // DON'T USE (deprecated):  retrieve the Instruction from the appropriate pipeline stage struct
-    uint GetInstruction();
+    uint GetInstruction(int way = 0);
     // DON'T USE (deprecated):  retrieve the ALU output from the appropriate pipeline stage struct
-    uint GetALUOut();
+    uint GetALUOut(int way = 0);
     // GetFetch retrieves a snapshot of Fetch stage outputs.
-    Fetch GetFetch();
+    Fetch GetFetch(int way = 0);
     // GetFd retrieves a snapshot of Fd stage outputs.
-    Fd GetFd();
+    Fd GetFd(int way = 0);
     // GetDx retrieves a snapshot of Dx stage outputs.
-    Dx GetDx();
+    Dx GetDx(int way = 0);
     // GetXm retrieves a snapshot of Xm stage outputs.
-    Xm GetXm();
+    Xm GetXm(int way = 0);
     // GetMw retrieves a snapshot of Mw stage outputs.
-    Mw GetMw();
+    Mw GetMw(int way = 0);
 }
 
 public static class CPUFactory
 {
     // We use an Enum instead of a string to avoid typos.
     public enum ImplementationType { Verilator, FPGA }
+    public enum CPUArchitecture { Basic, Superscalar }
 
-    public static ICPU Create(string levelPath, ImplementationType type = ImplementationType.Verilator)
+    public static ICPU Create(string levelPath, ImplementationType type = ImplementationType.Verilator, CPUArchitecture cpu_arch = CPUArchitecture.Basic)
     {
-        return type switch
-        {
-            ImplementationType.Verilator => new VerilatorClient(levelPath),
-            ImplementationType.FPGA => new FPGAClient(levelPath),
-            _ => throw new System.ArgumentException("Invalid Implementation Type")
-        };
+        return (type, cpu_arch) switch
+            {
+                // Basic RISC-V CPU:
+                (ImplementationType.Verilator, CPUArchitecture.Basic)       => new VerilatorClient(levelPath),
+                (ImplementationType.FPGA,      CPUArchitecture.Basic)       => new FPGAClient(levelPath),
+                // Superscalar CPU:
+                (ImplementationType.Verilator, CPUArchitecture.Superscalar) => new VerilatorClientSuperscalar(levelPath),
+                (ImplementationType.FPGA,      CPUArchitecture.Superscalar) => new FPGAClientSuperscalar(levelPath),
+                // OOO added below (in future):
+                _ => throw new System.ArgumentException($"Invalid configuration: {type}, {cpu_arch}")
+            };
     }
 
     // Create an ICPU from already-assembled hex instructions rather than a file path.
-    public static ICPU Create(string[] hexInstructions, ImplementationType type = ImplementationType.Verilator)
+    public static ICPU Create(string[] hexInstructions, ImplementationType type = ImplementationType.Verilator, CPUArchitecture cpu_arch = CPUArchitecture.Basic)
     {
-        return type switch
-        {
-            ImplementationType.Verilator => new VerilatorClient(hexInstructions),
-            ImplementationType.FPGA => new FPGAClient(hexInstructions),
-            _ => throw new System.ArgumentException("Invalid Implementation Type")
-        };
+        return (type, cpu_arch) switch
+            {
+                // Basic RISC-V CPU:
+                (ImplementationType.Verilator, CPUArchitecture.Basic)       => new VerilatorClient(hexInstructions),
+                (ImplementationType.FPGA,      CPUArchitecture.Basic)       => new FPGAClient(hexInstructions),
+                // Superscalar CPU:
+                (ImplementationType.Verilator, CPUArchitecture.Superscalar) => new VerilatorClientSuperscalar(hexInstructions),
+                (ImplementationType.FPGA,      CPUArchitecture.Superscalar) => new FPGAClientSuperscalar(hexInstructions),
+                // OOO added below (in future):
+                _ => throw new System.ArgumentException($"Invalid configuration: {type}, {cpu_arch}")
+            };
     }
 }

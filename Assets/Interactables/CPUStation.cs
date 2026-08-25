@@ -7,6 +7,7 @@ public class CPUStation : Table
 {
     [Header("CPU Stage")]
     [SerializeField] private PipelineStage assignedStage = PipelineStage.Unprocessed;
+    [SerializeField] private int assignedWay = 0;
 
     [Header("Processing Settings")]
     [SerializeField] private bool requiresProcessing = true;
@@ -35,6 +36,7 @@ public class CPUStation : Table
     private float processingEndTime = -1f;
 
     public PipelineStage AssignedStage => assignedStage;
+    public int AssignedWay => assignedWay;
     private bool IsProcessing => isProcessing;
     private bool RequiresProcessing => requiresProcessing;
     private CPUController CpuController => cpuController;
@@ -146,7 +148,7 @@ public class CPUStation : Table
         {
             InstructionBrick brickToPickup = RemoveBrick();
             HoldingSystem.PickUpBrick(brickToPickup);
-            CpuController?.GetALUOutput();
+            CpuController?.GetALUOutput(assignedWay);
             return;
         }
 
@@ -169,6 +171,14 @@ public class CPUStation : Table
     public override void PlaceBrick(InstructionBrick brick)
     {
         base.PlaceBrick(brick);
+
+        // Fetch is the only stage where the player chooses a brick's way (see StartPlatform.cs:
+        // bricks spawn with Way unset). Re-assigned on every placement — including moving a
+        // brick between Fetch stations after a validation error — so Way always matches
+        // wherever the brick is currently sitting. Placing on any other stage leaves Way as
+        // whatever it was assigned at Fetch.
+        if (assignedStage == PipelineStage.Fetch)
+            brick.SetWay(assignedWay);
     }
 
     private void StartProcessing(float duration)
