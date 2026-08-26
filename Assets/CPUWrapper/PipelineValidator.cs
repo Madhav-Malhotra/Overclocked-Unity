@@ -49,7 +49,7 @@ public static class PipelineValidator
             InstructionBrick brick = station.CurrentBrick;
             if (brick == null) continue;
 
-            CheckStation(station, brick, statesB[brick.Way], expectedByWay[brick.Way], showWay, errors);
+            CheckStation(station, brick, statesB, expectedByWay, showWay, errors);
         }
 
         for (int way = 0; way < statesB.Length; way++)
@@ -84,12 +84,32 @@ public static class PipelineValidator
         return expected;
     }
 
-    private static void CheckStation(CPUStation station, InstructionBrick brick, CPUState wayState,
-        Dictionary<uint, PipelineStage> expected, bool showWay, List<ValidationError> errors)
+    private static void CheckStation(CPUStation station, InstructionBrick brick, CPUState[] statesB,
+        Dictionary<uint, PipelineStage>[] expectedByWay, bool showWay, List<ValidationError> errors)
     {
         uint pc = brick.InstructionPc;
         PipelineStage brickStage = station.AssignedStage;
-        string pcTag = showWay ? $"[pc=0x{PcHex(pc)}, way={brick.Way}]" : $"[pc=0x{PcHex(pc)}]";
+        int stationWay = station.AssignedWay;
+        string pcTag = showWay ? $"[pc=0x{PcHex(pc)}, way={stationWay}]" : $"[pc=0x{PcHex(pc)}]";
+
+        CPUState wayState = statesB[stationWay];
+        Dictionary<uint, PipelineStage> expected = expectedByWay[stationWay];
+
+        // brick.Way is only assigned at Fetch (CPUStation.PlaceBrick) and starts at -1
+        // (unset) until then, so a brick that was never fetched carries no meaningful way
+        // info yet. Only trust it — ahead of the expected-stage check below — once it's
+        // been assigned AND the PC is actually active in the pipeline for the way it was
+        // fetched into; otherwise a brick dropped straight into a later stage without ever
+        // visiting Fetch would get misdiagnosed as "belongs to way X" instead of the real
+        // "not in the pipeline yet" or "wrong stage" error. Always -1 on single-way scenes,
+        // so unreachable there.
+        if (brickStage != PipelineStage.Fetch && brick.Way != -1 && brick.Way != stationWay &&
+            expectedByWay[brick.Way].ContainsKey(pc))
+        {
+            errors.Add(new ValidationError(brickStage,
+                $"Instruction belongs to way {brick.Way}, not way {stationWay}. {pcTag}"));
+            return;
+        }
 
         if (expected.TryGetValue(pc, out PipelineStage expectedStage))
         {
@@ -99,7 +119,7 @@ public static class PipelineValidator
             int brickOrdinal    = (int)brickStage;
             int expectedOrdinal = (int)expectedStage;
 
-            string wayLabel = StallLabel(wayState, brick.Way);
+            string wayLabel = StallLabel(wayState, stationWay);
             string msg;
             if (expectedOrdinal > brickOrdinal)
                 msg = $"Instruction should have advanced to {expectedStage} (currently at {brickStage}).{wayLabel} {pcTag}";
@@ -113,10 +133,17 @@ public static class PipelineValidator
             // wayState is pre-tick, so wayState.pc is exactly the address IMEM is reading
             // this cycle — the correct PC for a brick currently sitting at Fetch.
         }
+        else if (brickStage == PipelineStage.Fetch && statesB.Length > 1 &&
+                 pc == statesB[1 - stationWay].pc)
+        {
+            // Matches the OTHER way's next PC — wrong-way Fetch placement. Unreachable on
+            // single-way scenes.
+            errors.Add(new ValidationError(brickStage,
+                $"Instruction should not be placed in way {stationWay}. {pcTag}"));
+        }
         else
         {
             // Brick's PC is not in any active pipeline stage and not the next fetch.
-            // The player put it somewhere it doesn't belong yet.
             errors.Add(new ValidationError(brickStage,
                 $"Instruction is not in the pipeline at this stage. {pcTag}"));
         }

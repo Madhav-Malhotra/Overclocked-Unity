@@ -68,7 +68,6 @@ public class CPUController : MonoBehaviour
             for (int way = 0; way < wayCount; way++)
             {
                 statesB[way] = cpu.GetState(way);
-                Debug.Log($"[DEBUG InitCPU] way={way} pc=0x{statesB[way].pc:X8} fd_pc=0x{statesB[way].fd_pc:X8}");
             }
         }
         catch (Exception ex)
@@ -95,7 +94,6 @@ public class CPUController : MonoBehaviour
         for (int way = 0; way < statesB.Length; way++)
         {
             statesB[way] = cpu.GetState(way);
-            Debug.Log($"[DEBUG AdvanceTick] way={way} pc=0x{statesB[way].pc:X8} fd_pc=0x{statesB[way].fd_pc:X8}");
         }
     }
 
