@@ -55,6 +55,11 @@ private void Update()
     
     public uint InstructionPc { get; private set; }
     public void SetInstructionPc(uint pc) { InstructionPc = pc; }
+    // Which superscalar way this brick is currently routed to. Unused (always -1) outside the
+    // Superscalar scene. -1 means unset — the player routes it when placing at Fetch, and it
+    // stays -1 until then so validation can tell "unset" apart from "assigned to way 0".
+    public int Way { get; private set; } = -1;
+    public void SetWay(int way) { Way = way; }
     public uint InstructionHex { get; private set; }
     public void SetInstructionHex(uint hex) { InstructionHex = hex; }
     public string InstructionLabel { get; private set; }

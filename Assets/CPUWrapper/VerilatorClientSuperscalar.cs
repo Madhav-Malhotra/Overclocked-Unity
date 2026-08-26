@@ -1,5 +1,5 @@
 /*
- * AUTO-GENERATED from bridge/VerilatorClient.cs — DO NOT EDIT DIRECTLY.
+ * AUTO-GENERATED from bridge/VerilatorClientSuperscalar.cs — DO NOT EDIT DIRECTLY.
  * Edit the source in bridge/ and re-run `make sync-unity` from the bridge/ directory.
  */
 using UnityEngine;
@@ -7,15 +7,16 @@ using System;
 using System.IO;
 using System.Runtime.InteropServices;
 
-public class VerilatorClient : IDisposable, ICPU
+public class VerilatorClientSuperscalar : IDisposable, ICPU
 {
-    private const string NativeLib = "design_wrapper";
+    private const string NativeLib = "design_wrapper_ss"; // updated to reference superscalar design
     // Imports the function from our compiled shared library
     // required for each external function
     [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl)]
     public static extern void init_design_wrapper();
 
     [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl)]
+    
     public static extern void finish_reset();
 
     [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl)]
@@ -25,7 +26,7 @@ public class VerilatorClient : IDisposable, ICPU
     public static extern void eval();
 
     [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl)]
-    public static extern void get_cpu_state(out CPUState state);
+    public static extern void get_cpu_state(out CPUState state, int way); // updated to take in way as an argument
 
     [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl)]
     public static extern void clear_imem();
@@ -68,7 +69,6 @@ public class VerilatorClient : IDisposable, ICPU
     {
         try
         {
-            clear_imem();
             string[] lines = File.ReadAllLines(path);
             uint currentAddr = 0x01000000; // Base addr of imem
             foreach (string line in lines)
@@ -90,7 +90,7 @@ public class VerilatorClient : IDisposable, ICPU
         }
     }
 
-    /*
+        /*
      * writeIMem — Load already-assembled hex instructions directly into instruction memory.
      *
      * Writes each hex string (optionally "0x"-prefixed) to imem via set_imem(),
@@ -113,7 +113,7 @@ public class VerilatorClient : IDisposable, ICPU
         Debug.Log($"Successfully loaded {hexInstructions.Length} instructions into IMEM.");
     }
 
-    /*
+        /*
      * Reset — Re-initialize the CPU to a clean post-reset state.
      *
      * Calls finish_reset() to complete the reset sequence started by
@@ -131,9 +131,9 @@ public class VerilatorClient : IDisposable, ICPU
      * Calls GetState() internally to refresh state.
      * To access fields of full signal snapshot use GetState().
      */
-    public void PrintState(int way = 0) // NOTE: way is used for superscalar getState, default way = 0 is ignored here
+    public void PrintState(int way = 0)
     {
-        GetState();
+        GetState(way);
         Debug.Log(this.state);
     }
 
@@ -149,7 +149,7 @@ public class VerilatorClient : IDisposable, ICPU
     public CPUState GetState(int way = 0)
     {
         CPUState state;
-        get_cpu_state(out state);
+        get_cpu_state(out state, way);
         this.state = state;
         return this.state;
     }
@@ -161,7 +161,7 @@ public class VerilatorClient : IDisposable, ICPU
      */
     public uint GetPC(int way = 0)
     {
-        GetState();
+        GetState(way);
         return this.state.pc;
     }
 
@@ -172,7 +172,7 @@ public class VerilatorClient : IDisposable, ICPU
      */
     public uint GetInstruction(int way = 0)
     {
-        GetState();
+        GetState(way);
         return this.state.instruction;
     }
 
@@ -183,7 +183,7 @@ public class VerilatorClient : IDisposable, ICPU
      */
     public uint GetALUOut(int way = 0)
     {
-        GetState();
+        GetState(way);
         return this.state.alu_out;
     }
 
@@ -194,7 +194,7 @@ public class VerilatorClient : IDisposable, ICPU
      */
     public Fetch GetFetch(int way = 0)
     {
-        GetState();
+        GetState(way);
         return new Fetch
         {
             pc = this.state.pc
@@ -208,7 +208,7 @@ public class VerilatorClient : IDisposable, ICPU
      */
     public Fd GetFd(int way = 0)
     {
-        GetState();
+        GetState(way);
         return new Fd
         {
             fd_pc = this.state.fd_pc,
@@ -224,7 +224,7 @@ public class VerilatorClient : IDisposable, ICPU
      */
     public Dx GetDx(int way = 0)
     {
-        GetState();
+        GetState(way);
         return new Dx
         {
             addr_rs1 = this.state.addr_rs1,
@@ -239,7 +239,7 @@ public class VerilatorClient : IDisposable, ICPU
      */
     public Xm GetXm(int way = 0)
     {
-        GetState();
+        GetState(way);
         return new Xm
         {
             alu_out = this.state.alu_out,
@@ -254,7 +254,7 @@ public class VerilatorClient : IDisposable, ICPU
      */
     public Mw GetMw(int way = 0)
     {
-        GetState();
+        GetState(way);
         return new Mw
         {
             pc4 = this.state.mw_pc4,
@@ -274,12 +274,11 @@ public class VerilatorClient : IDisposable, ICPU
      *
      * @param path  Path to the hex program file (see writeIMem for format details).
      */
-    public VerilatorClient(string path)
+    public VerilatorClientSuperscalar(string path)
     {
         this.state = new CPUState();
         init_design_wrapper();
         writeIMem(path);
-        Reset();
     }
 
     /*
@@ -290,7 +289,7 @@ public class VerilatorClient : IDisposable, ICPU
      *
      * @param hexInstructions  Array of 32-bit hex-encoded instruction words.
      */
-    public VerilatorClient(string[] hexInstructions)
+    public VerilatorClientSuperscalar(string[] hexInstructions)
     {
         this.state = new CPUState();
         init_design_wrapper();
@@ -345,7 +344,7 @@ public class VerilatorClient : IDisposable, ICPU
     // does not get called.
     // It gives your base class the opportunity to finalize.
     // Do not provide finalizer in types derived from this class.
-    ~VerilatorClient()
+    ~VerilatorClientSuperscalar()
     {
         // Do not re-create Dispose clean-up code here.
         // Calling Dispose(disposing: false) is optimal in terms of

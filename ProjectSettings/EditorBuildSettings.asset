@@ -17,6 +17,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/EndScreen.unity
     guid: 39c8d46cef4b7ab4aa2246de5a2375b9
+  - enabled: 1
+    path: Assets/Scenes/Superscalar.unity
+    guid: f8dcc11a873c1d141ba01a29e1f8c5c1
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0
