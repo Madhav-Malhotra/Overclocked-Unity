@@ -10,8 +10,8 @@
                 <ui:Label name="progress-label" text="0 / 0" class="ds-h2" style="font-size: 42px; -unity-text-align: middle-center;" />
             </ui:VisualElement>
         </ui:VisualElement>
-        <ui:VisualElement name="toast-panel" class="ds-toast ds-toast--danger" style="position: absolute; left: 36px; bottom: 36px; display: none;">
-            <ui:VisualElement name="toast-icon" class="ds-toast__icon ds-icon ds-icon--warning" style="width: 36px; height: 36px;" />
+        <ui:VisualElement name="toast-panel" class="ds-toast ds-toast--danger" style="position: absolute; left: 36px; bottom: 36px; display: none; background-color: rgb(153, 27, 27);">
+            <ui:VisualElement name="toast-icon" class="ds-toast__icon ds-icon ds-icon--warning" style="width: 36px; height: 36px; -unity-background-image-tint-color: rgb(255, 255, 255);" />
             <ui:Label name="toast-message" class="ds-toast__message" style="font-size: 32px;" />
         </ui:VisualElement>
         <ui:Label name="prompt-label" text="" class="ds-body-1" style="position: absolute; right: 30px; bottom: 30px; opacity: 0; font-size: 36px;" />

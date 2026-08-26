@@ -45,13 +45,11 @@ public class TickButtonHandler : MonoBehaviour
         for (int way = 0; way < statesB.Length; way++)
         {
             statesB[way] = cpuController.GetStateB(way);
-            Debug.Log($"[DEBUG OnTickPressed] WayCount={cpuController.WayCount} way={way} pc=0x{statesB[way].pc:X8}");
         }
 
         foreach (var station in stations)
         {
             if (station == null || !station.HasBrick) continue;
-            Debug.Log($"[DEBUG station] name={station.name} AssignedStage={station.AssignedStage} AssignedWay={station.AssignedWay} brick.InstructionPc=0x{station.CurrentBrick.InstructionPc:X8} brick.Way={station.CurrentBrick.Way}");
         }
 
         uint nextSpawnPc = startPlatform != null ? startPlatform.NextSpawnPc : uint.MaxValue;
