@@ -1,5 +1,11 @@
 - Edge case: person takes brick off spawn, but we have a stall expected when they press T to validate. Then, they can't put their brick back on spawn since another brick has replaced
 
+- UNTESTED: no level to test stall cases with superscalar
+
+- Branch instructions show incorrect destination register values.
+
+- When branches are taken, instructions start being squashed as no-ops and it makes existing instruction bricks invalid. Should add a squash/bin mechanism. 
+
 - KNOWN NATIVE BUG (worked around, not fixed): calling cpu.Dispose() (Assets/CPUWrapper/CPU.cs)
   -> cleanup_design_wrapper() -> design->final() (verilator/bridge.cpp) hangs the Unity Editor
   completely (freeze, zero console output, must force-quit). Reproduced with a full computer
