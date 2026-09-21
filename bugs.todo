@@ -4,15 +4,4 @@
 
 - Branch instructions show incorrect destination register values.
 
-- When branches are taken, instructions start being squashed as no-ops and it makes existing instruction bricks invalid. Should add a squash/bin mechanism. 
-
-- KNOWN NATIVE BUG (worked around, not fixed): calling cpu.Dispose() (Assets/CPUWrapper/CPU.cs)
-  -> cleanup_design_wrapper() -> design->final() (verilator/bridge.cpp) hangs the Unity Editor
-  completely (freeze, zero console output, must force-quit). Reproduced with a full computer
-  restart, so it's not an orphaned-process/locked-DLL issue — it's a real bug in the native
-  Verilator teardown path. Workaround in place: CPUController.InitCPU() never calls Dispose(),
-  just drops the old `cpu` reference and lets a new CPU(instructions) take over (same pattern
-  OnDestroy() already used via GC.SuppressFinalize without Dispose()). This leaks the old
-  native Verilated model on every level reload — acceptable for now given how few reloads
-  happen per session, but should be fixed properly in bridge.cpp eventually (investigate
-  design->final() — possibly hangs on trace/waveform flush or re-entrant finalize).
+- When branches are taken, instructions start being squashed as no-ops and it makes existing instruction bricks invalid. Should add a squash/bin mechanism.
