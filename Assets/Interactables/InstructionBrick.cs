@@ -52,7 +52,7 @@ private void Update()
         transform.localPosition = new Vector3(bobXOffset, bobBaseHeight + yOffset, 0f);
     }
 
-    
+
     public uint InstructionPc { get; private set; }
     public void SetInstructionPc(uint pc) { InstructionPc = pc; }
     // Which superscalar way this brick is currently routed to. Unused (always -1) outside the
