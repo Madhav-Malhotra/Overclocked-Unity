@@ -153,6 +153,20 @@ public void LoadLevel(int index)
         return instructionQueue.Dequeue();
     }
 
+    // Allows for returning instructions to the start platform
+    // TODO(diana) consider better implementations that don't involve recreating the whole queue
+    public void RequeueInstruction(InstructionData data)
+    {
+        // have to dequeue everything and requeue with data at the end of the queue
+        Queue<InstructionData> reordered = new();
+        reordered.Enqueue(data);
+        for (int i = 0; i < instructionQueue.Count; i++)
+        {
+            reordered.Enqueue(instructionQueue.Dequeue());
+        }
+        instructionQueue = reordered;
+    }
+
     public bool HasMoreInstructions()
     {
         return instructionQueue.Count > 0;
