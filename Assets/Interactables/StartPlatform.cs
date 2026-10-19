@@ -23,7 +23,8 @@ public class StartPlatform : Table
         InstructionData next = LevelManager.Instance.GetNextInstruction();
         if (next == null)
         {
-            _prevPc = ImemBaseAddr + (uint)((_spawnIndex) * 4); // update the last PC to the last instruction, since _spawnIndex won't be incremented
+            _prevPc = ImemBaseAddr + (uint)((_spawnIndex - 1) * 4); // update the last PC to the last instruction
+            // _spawnIndex was incremented when the last instruction spawned
             return;
         }
 
@@ -92,7 +93,8 @@ public class StartPlatform : Table
     public override bool CanInteract()
     {
         // check the base conditions first, but also allow a player to return their current brick to StartPlatform if the next brick has already spawned
-        return base.CanInteract() || (
+        // we include base.HasBrick, because the base table is always interactable if it's empty.
+        return (base.CanInteract() && base.HasBrick) || (
             HoldingSystem.IsHoldingBrick() && _prevPc == HoldingSystem.GetHeldBrick().InstructionPc
         );
     }
