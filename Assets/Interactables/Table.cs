@@ -103,6 +103,16 @@ public class Table : Interactable
         brick.SetParentTable(this);
     }
 
+    public void DeleteBrick()
+    {
+        if (currentBrick != null)
+        {
+            Destroy(currentBrick.gameObject);
+            currentBrick = null;
+            OnBrickRemoved();
+        }
+    }
+
 public InstructionBrick RemoveBrick()
     {
         InstructionBrick brick = currentBrick;
