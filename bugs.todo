@@ -1,5 +1,3 @@
-- Edge case: person takes brick off spawn, but we have a stall expected when they press T to validate. Then, they can't put their brick back on spawn since another brick has replaced
-
 - UNTESTED: no level to test stall cases with superscalar
 
 - Branch instructions show incorrect destination register values.
