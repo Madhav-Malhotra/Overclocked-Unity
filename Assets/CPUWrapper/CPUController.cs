@@ -43,15 +43,11 @@ public class CPUController : MonoBehaviour
     // Re-initializes the CPU with a new level's instructions (e.g. on retry or level switch).
     // LevelManager calls this so IMEM is reloaded with the correct level rather than staying stale.
     //
-    // Deliberately does NOT call cpu.Dispose() on the old instance before reassigning —
-    // see bugs.todo: cpu.Dispose() -> cleanup_design_wrapper() -> design->final() hangs the
-    // Editor (freezes with zero console output). OnDestroy() below has the same workaround
-    // (GC.SuppressFinalize without Dispose). init_design_wrapper() is safe to call again on
-    // an already-live design (it no-ops the allocation and just re-runs reset), so we just
-    // drop the old CPU reference and let a new one take over; the old native model leaks
-    // for the lifetime of the process instead of being freed.
     public void InitCPU(InstructionData[] instructions)
     {
+        if (cpu != null) {
+            cpu?.Dispose();
+        }
         cpu = null;
         cpuArchitecture = LevelManager.Instance != null && LevelManager.Instance.CurrentLevelData != null
             ? LevelManager.Instance.CurrentLevelData.GetCpuArchitecture()
@@ -129,7 +125,7 @@ public class CPUController : MonoBehaviour
         if (cpu == null)
             return;
 
-        GC.SuppressFinalize(cpu);
+        cpu?.Dispose();
         cpu = null;
     }
 }

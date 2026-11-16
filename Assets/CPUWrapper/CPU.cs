@@ -118,7 +118,7 @@ public struct CPUState
             $"Signals -> eq: 0x{br_eq:X}, lt: 0x{br_lt:X}, un: 0x{br_un:X}, taken: 0x{br_taken:X} | bc_sel1: 0x{branch_comp_data1_sel:X}, bc_sel2: 0x{branch_comp_data2_sel:X} | pc_sel: 0x{pc_sel:X}, a_sel: 0x{a_sel:X}, b_sel: 0x{b_sel:X}, alu_sel: 0x{alu_sel:X1}, mem_rw: 0x{mem_rw:X}, reg_wen: 0x{reg_wen:X}, wb_sel: 0x{wb_sel:X}\n" +
             $"Decode  -> rd: 0x{addr_rd:X2}, rs1: 0x{addr_rs1:X2}, rs2: 0x{addr_rs2:X2}, f3: 0x{funct3:X1}, f7: 0x{funct7:X2}, imm: 0x{imm:X8}, shamt: 0x{shamt:X2} | types(u/j/i): {is_u_type_w}/{is_j_type_w}/{is_i_type_w}\n" +
             $"Memory  -> imem_out: 0x{imem_data_out:X8}, dmem_in: 0x{dmem_data_in:X8}, dmem_out: 0x{dmem_data_out:X8}\n" +
-            $"Pipeline-> wb_data: 0x{wb_data:X8}, wb_in_alu: 0x{wb_in_alu:X8}, mem: 0x{mem:X8}, pc4: 0x{mw_pc4:X8}\n" + 
+            $"Pipeline-> wb_data: 0x{wb_data:X8}, wb_in_alu: 0x{wb_in_alu:X8}, mem: 0x{mem:X8}, pc4: 0x{mw_pc4:X8}\n" +
             $"Multi-cycle Mult signals -> mult_start_pulse: 0x{mult_start_pulse:X8}, mult_hold: 0x{mult_hold:X8}, mult_busy: 0x{mult_busy:X8}";
     }
 }
@@ -211,7 +211,7 @@ enum Operation : byte
 }
 
 // Bridge CPU interface to abstract FPGA/Verilator backend from Unity. - Used for basic and superscalar (way is ignored in basic case)
-public interface ICPU
+public interface ICPU : IDisposable
 {
     // CPUState struct representing all module outputs.
     CPUState state { get; } // TODO make this var name uppercase
@@ -270,15 +270,15 @@ public static class CPUFactory
     public static ICPU Create(string[] hexInstructions, ImplementationType type = ImplementationType.Verilator, CPUArchitecture cpu_arch = CPUArchitecture.Basic)
     {
         return (type, cpu_arch) switch
-            {
-                // Basic RISC-V CPU:
-                (ImplementationType.Verilator, CPUArchitecture.Basic)       => new VerilatorClient(hexInstructions),
-                (ImplementationType.FPGA,      CPUArchitecture.Basic)       => new FPGAClient(hexInstructions),
-                // Superscalar CPU:
-                (ImplementationType.Verilator, CPUArchitecture.Superscalar) => new VerilatorClientSuperscalar(hexInstructions),
-                (ImplementationType.FPGA,      CPUArchitecture.Superscalar) => new FPGAClientSuperscalar(hexInstructions),
-                // OOO added below (in future):
-                _ => throw new System.ArgumentException($"Invalid configuration: {type}, {cpu_arch}")
-            };
+        {
+            // Basic RISC-V CPU:
+            (ImplementationType.Verilator, CPUArchitecture.Basic) => new VerilatorClient(hexInstructions),
+            (ImplementationType.FPGA, CPUArchitecture.Basic) => new FPGAClient(hexInstructions),
+            // Superscalar CPU:
+            (ImplementationType.Verilator, CPUArchitecture.Superscalar) => new VerilatorClientSuperscalar(hexInstructions),
+            (ImplementationType.FPGA, CPUArchitecture.Superscalar) => new FPGAClientSuperscalar(hexInstructions),
+            // OOO added below (in future):
+            _ => throw new System.ArgumentException($"Invalid configuration: {type}, {cpu_arch}")
+        };
     }
 }
