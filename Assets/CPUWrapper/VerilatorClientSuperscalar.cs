@@ -1,5 +1,5 @@
 /*
- * AUTO-GENERATED from bridge/VerilatorClientSuperscalar.cs — DO NOT EDIT DIRECTLY.
+ * AUTO-GENERATED from bridge/VerilatorClientSuperscalar.cs â€” DO NOT EDIT DIRECTLY.
  * Edit the source in bridge/ and re-run `make sync-unity` from the bridge/ directory.
  */
 using UnityEngine;
@@ -21,6 +21,9 @@ public class VerilatorClientSuperscalar : IDisposable, ICPU
 
     [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl)]
     public static extern void tick();
+
+    [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl)]
+    public static extern void selectMultiplier(bool multicyc_sel);
 
     [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl)]
     public static extern void eval();
@@ -55,6 +58,14 @@ public class VerilatorClientSuperscalar : IDisposable, ICPU
         return;
     }
 
+     /*
+     * SelectMultiplier - Pick whether to use the single-cycle or multi-cycle multiplier
+     */
+    public void SelectMultiplier(bool multicyc_sel)
+    {
+        selectMultiplier(multicyc_sel);
+    }
+
     /*
      * writeIMem — Load a hex-encoded program file into instruction memory.
      *
@@ -69,6 +80,7 @@ public class VerilatorClientSuperscalar : IDisposable, ICPU
     {
         try
         {
+            clear_imem();
             string[] lines = File.ReadAllLines(path);
             uint currentAddr = 0x01000000; // Base addr of imem
             foreach (string line in lines)
@@ -274,11 +286,13 @@ public class VerilatorClientSuperscalar : IDisposable, ICPU
      *
      * @param path  Path to the hex program file (see writeIMem for format details).
      */
-    public VerilatorClientSuperscalar(string path)
+    public VerilatorClientSuperscalar(string path, bool multicyc_sel)
     {
         this.state = new CPUState();
         init_design_wrapper();
+        SelectMultiplier(multicyc_sel);
         writeIMem(path);
+        Reset();
     }
 
     /*
@@ -289,10 +303,11 @@ public class VerilatorClientSuperscalar : IDisposable, ICPU
      *
      * @param hexInstructions  Array of 32-bit hex-encoded instruction words.
      */
-    public VerilatorClientSuperscalar(string[] hexInstructions)
+    public VerilatorClientSuperscalar(string[] hexInstructions, bool multicyc_sel)
     {
         this.state = new CPUState();
         init_design_wrapper();
+        SelectMultiplier(multicyc_sel);
         writeIMem(hexInstructions);
         Reset();
     }

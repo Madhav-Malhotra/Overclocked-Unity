@@ -1,5 +1,5 @@
 /*
- * AUTO-GENERATED from bridge/CPU.cs — DO NOT EDIT DIRECTLY.
+ * AUTO-GENERATED from bridge/CPU.cs â€” DO NOT EDIT DIRECTLY.
  * Edit the source in bridge/ and re-run `make sync-unity` from the bridge/ directory.
  */
 /*
@@ -217,6 +217,8 @@ public interface ICPU
     CPUState state { get; } // TODO make this var name uppercase
     // Tick advances the clock to mark the end of a CPU cycle.
     void Tick();
+    // SelectMultiplier configures the appropriate multiplier by asserting the USE_MULTICYCLE_MULTIPLIER input signal
+    void SelectMultiplier(bool multicycle_sel);
     // writeIMem loads a hex-encoded program file into instruction memory.
     void writeIMem(string path);
     // writeIMem loads already-assembled hex instructions directly into instruction memory.
@@ -251,15 +253,15 @@ public static class CPUFactory
     public enum ImplementationType { Verilator, FPGA }
     public enum CPUArchitecture { Basic, Superscalar }
 
-    public static ICPU Create(string levelPath, ImplementationType type = ImplementationType.Verilator, CPUArchitecture cpu_arch = CPUArchitecture.Basic)
+    public static ICPU Create(string levelPath, ImplementationType type = ImplementationType.Verilator, CPUArchitecture cpu_arch = CPUArchitecture.Basic, bool multicyc_sel = false)
     {
         return (type, cpu_arch) switch
             {
                 // Basic RISC-V CPU:
-                (ImplementationType.Verilator, CPUArchitecture.Basic)       => new VerilatorClient(levelPath),
+                (ImplementationType.Verilator, CPUArchitecture.Basic)       => new VerilatorClient(levelPath, multicyc_sel),
                 (ImplementationType.FPGA,      CPUArchitecture.Basic)       => new FPGAClient(levelPath),
                 // Superscalar CPU:
-                (ImplementationType.Verilator, CPUArchitecture.Superscalar) => new VerilatorClientSuperscalar(levelPath),
+                (ImplementationType.Verilator, CPUArchitecture.Superscalar) => new VerilatorClientSuperscalar(levelPath, multicyc_sel),
                 (ImplementationType.FPGA,      CPUArchitecture.Superscalar) => new FPGAClientSuperscalar(levelPath),
                 // OOO added below (in future):
                 _ => throw new System.ArgumentException($"Invalid configuration: {type}, {cpu_arch}")
@@ -267,15 +269,15 @@ public static class CPUFactory
     }
 
     // Create an ICPU from already-assembled hex instructions rather than a file path.
-    public static ICPU Create(string[] hexInstructions, ImplementationType type = ImplementationType.Verilator, CPUArchitecture cpu_arch = CPUArchitecture.Basic)
+    public static ICPU Create(string[] hexInstructions, ImplementationType type = ImplementationType.Verilator, CPUArchitecture cpu_arch = CPUArchitecture.Basic, bool multicyc_sel = false)
     {
         return (type, cpu_arch) switch
             {
                 // Basic RISC-V CPU:
-                (ImplementationType.Verilator, CPUArchitecture.Basic)       => new VerilatorClient(hexInstructions),
+                (ImplementationType.Verilator, CPUArchitecture.Basic)       => new VerilatorClient(hexInstructions, multicyc_sel),
                 (ImplementationType.FPGA,      CPUArchitecture.Basic)       => new FPGAClient(hexInstructions),
                 // Superscalar CPU:
-                (ImplementationType.Verilator, CPUArchitecture.Superscalar) => new VerilatorClientSuperscalar(hexInstructions),
+                (ImplementationType.Verilator, CPUArchitecture.Superscalar) => new VerilatorClientSuperscalar(hexInstructions, multicyc_sel),
                 (ImplementationType.FPGA,      CPUArchitecture.Superscalar) => new FPGAClientSuperscalar(hexInstructions),
                 // OOO added below (in future):
                 _ => throw new System.ArgumentException($"Invalid configuration: {type}, {cpu_arch}")

@@ -1,5 +1,5 @@
 /*
- * AUTO-GENERATED from bridge/FPGAClient.cs — DO NOT EDIT DIRECTLY.
+ * AUTO-GENERATED from bridge/FPGAClient.cs â€” DO NOT EDIT DIRECTLY.
  * Edit the source in bridge/ and re-run `make sync-unity` from the bridge/ directory.
  */
 using UnityEngine;
@@ -67,6 +67,17 @@ public class FPGAClient : IDisposable, ICPU
     public void Tick()
     {
         makeRequest("/tick");
+        return;
+    }
+
+    /*
+     * SelectMultiplier - Pick whether to use the single-cycle or multi-cycle multiplier
+     * TODO - (Peri) I still need to figure out how this will be done on an FPGA...
+     * Stub function added here as a placeholder to satisfy the ICPU interface.
+     */
+    public void SelectMultiplier(bool multicyc_sel)
+    {
+        Debug.Log("NOT IMPLEMENTED");
         return;
     }
 

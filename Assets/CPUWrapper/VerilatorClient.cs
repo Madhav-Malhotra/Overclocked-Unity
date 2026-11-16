@@ -1,5 +1,5 @@
 /*
- * AUTO-GENERATED from bridge/VerilatorClient.cs — DO NOT EDIT DIRECTLY.
+ * AUTO-GENERATED from bridge/VerilatorClient.cs â€” DO NOT EDIT DIRECTLY.
  * Edit the source in bridge/ and re-run `make sync-unity` from the bridge/ directory.
  */
 using UnityEngine;
@@ -20,6 +20,9 @@ public class VerilatorClient : IDisposable, ICPU
 
     [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl)]
     public static extern void tick();
+
+    [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl)]
+    public static extern void selectMultiplier(bool multicyc_sel);
 
     [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl)]
     public static extern void eval();
@@ -52,6 +55,14 @@ public class VerilatorClient : IDisposable, ICPU
     {
         tick();
         return;
+    }
+
+    /*
+     * SelectMultiplier - Pick whether to use the single-cycle or multi-cycle multiplier
+     */
+    public void SelectMultiplier(bool multicyc_sel)
+    {
+        selectMultiplier(multicyc_sel);
     }
 
     /*
@@ -274,10 +285,11 @@ public class VerilatorClient : IDisposable, ICPU
      *
      * @param path  Path to the hex program file (see writeIMem for format details).
      */
-    public VerilatorClient(string path)
+    public VerilatorClient(string path, bool multicyc_sel)
     {
         this.state = new CPUState();
         init_design_wrapper();
+        SelectMultiplier(multicyc_sel);
         writeIMem(path);
         Reset();
     }
@@ -290,10 +302,11 @@ public class VerilatorClient : IDisposable, ICPU
      *
      * @param hexInstructions  Array of 32-bit hex-encoded instruction words.
      */
-    public VerilatorClient(string[] hexInstructions)
+    public VerilatorClient(string[] hexInstructions, bool multicyc_sel)
     {
         this.state = new CPUState();
         init_design_wrapper();
+        SelectMultiplier(multicyc_sel);
         writeIMem(hexInstructions);
         Reset();
     }
