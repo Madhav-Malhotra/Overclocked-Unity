@@ -1,0 +1,89 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <ui:VisualElement name="help-root" class="help-root" picking-mode="Ignore">
+
+        <!-- ===== Level tip layer (ring + card). Never blocks clicks except on the card. ===== -->
+        <ui:VisualElement name="tip-layer" class="help-tip-layer" picking-mode="Ignore">
+            <ui:VisualElement name="tip-ring" class="help-tip-ring" picking-mode="Ignore" />
+            <ui:VisualElement name="tip-card" class="help-tip-card">
+                <ui:VisualElement class="help-tip-card__head">
+                    <ui:Label name="tip-step" text="1 / 1" class="help-tip-card__step" />
+                    <ui:Button name="tip-close" class="ds-btn ds-btn--icon ds-btn--ghost ds-btn--sm">
+                        <ui:VisualElement class="ds-icon ds-icon--close ds-icon--sm" />
+                    </ui:Button>
+                </ui:VisualElement>
+                <ui:Label name="tip-title" text="Title" class="ds-h3 help-tip-card__title" />
+                <ui:Label name="tip-text" text="" class="ds-body-1 help-tip-card__text" enable-rich-text="true" />
+                <ui:VisualElement class="help-tip-card__actions">
+                    <ui:Button name="tip-back" text="Back (B)" class="ds-btn ds-btn--secondary ds-btn--sm" />
+                    <ui:Button name="tip-next" text="Next" class="ds-btn ds-btn--primary ds-btn--sm" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <!-- ===== Modals ===== -->
+        <ui:VisualElement name="help-scrim" class="help-scrim">
+
+            <!-- Tutorial -->
+            <ui:VisualElement name="tutorial-modal" class="ds-modal help-modal">
+                <ui:VisualElement class="help-header">
+                    <ui:VisualElement class="ds-icon ds-icon--book help-header__icon" />
+                    <ui:Label text="TUTORIAL" class="ds-h2 help-header__title" />
+                    <ui:Button name="tutorial-close" class="ds-btn ds-btn--icon ds-btn--ghost">
+                        <ui:VisualElement class="ds-icon ds-icon--close" />
+                    </ui:Button>
+                </ui:VisualElement>
+                <ui:VisualElement class="help-body">
+                    <ui:VisualElement class="help-nav">
+                        <ui:VisualElement class="ds-search" name="search-wrap">
+                            <ui:VisualElement class="ds-icon ds-icon--search ds-search__icon" />
+                            <ui:TextField name="search-field" class="ds-search__field" />
+                        </ui:VisualElement>
+                        <ui:ScrollView name="topic-list" class="help-nav__list" horizontal-scroller-visibility="Hidden" vertical-scroller-visibility="AlwaysVisible" />
+                    </ui:VisualElement>
+                    <ui:ScrollView name="topic-content" class="help-content" horizontal-scroller-visibility="Hidden" vertical-scroller-visibility="AlwaysVisible" />
+                </ui:VisualElement>
+                <ui:VisualElement class="help-footer">
+                    <ui:Label text="Press Esc to close" class="ds-caption" />
+                    <ui:Button name="tutorial-close-2" text="Close" class="ds-btn ds-btn--primary ds-btn--sm" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+
+            <!-- Settings -->
+            <ui:VisualElement name="settings-modal" class="ds-modal help-modal help-modal--small">
+                <ui:VisualElement class="help-header">
+                    <ui:VisualElement class="ds-icon ds-icon--settings help-header__icon" />
+                    <ui:Label text="SETTINGS" class="ds-h2 help-header__title" />
+                    <ui:Button name="settings-close" class="ds-btn ds-btn--icon ds-btn--ghost">
+                        <ui:VisualElement class="ds-icon ds-icon--close" />
+                    </ui:Button>
+                </ui:VisualElement>
+                <ui:VisualElement class="help-modal__body">
+                    <ui:VisualElement class="help-setting-row">
+                        <ui:Label text="Master volume" class="ds-body-1" />
+                        <ui:Slider name="volume-slider" low-value="0" high-value="1" value="1" class="ds-slider ds-slider--filled" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="help-setting-row">
+                        <ui:Label text="Level tips" class="ds-body-1" />
+                        <ui:Button name="tips-toggle" text="On" class="ds-btn ds-btn--secondary ds-btn--sm" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="ds-modal__actions" style="flex-direction: row; justify-content: flex-end;">
+                        <ui:Button name="settings-close-2" text="Done" class="ds-btn ds-btn--primary ds-btn--sm" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+            </ui:VisualElement>
+
+            <!-- About -->
+            <ui:VisualElement name="about-modal" class="ds-modal help-modal help-modal--small">
+                <ui:VisualElement class="help-header">
+                    <ui:VisualElement class="ds-icon ds-icon--info help-header__icon" />
+                    <ui:Label text="ABOUT" class="ds-h2 help-header__title" />
+                    <ui:Button name="about-close" class="ds-btn ds-btn--icon ds-btn--ghost">
+                        <ui:VisualElement class="ds-icon ds-icon--close" />
+                    </ui:Button>
+                </ui:VisualElement>
+                <ui:ScrollView name="about-content" class="help-modal__body" style="max-height: 480px;" />
+            </ui:VisualElement>
+
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

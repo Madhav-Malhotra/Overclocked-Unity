@@ -27,6 +27,7 @@ public class TickButtonHandler : MonoBehaviour
 
     void Update()
     {
+        if (HelpOverlay.IsOpen) return; // tutorial/settings modal is open (typing in search must not tick)
         if (Keyboard.current != null && Keyboard.current.tKey.wasPressedThisFrame)
             OnTickPressed();
     }

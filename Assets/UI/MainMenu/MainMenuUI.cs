@@ -9,8 +9,9 @@ public class MainMenuUI : MonoBehaviour
     {
         var root = uiDocument.rootVisualElement;
         root.Q<Button>("start-btn")?.RegisterCallback<ClickEvent>(_ => SceneLoader.LoadGame(0));
-        root.Q<Button>("tutorial-btn")?.RegisterCallback<ClickEvent>(_ => Debug.Log("Tutorial not yet implemented"));
-        root.Q<Button>("settings-btn")?.RegisterCallback<ClickEvent>(_ => Debug.Log("Settings not yet implemented"));
-        root.Q<Button>("about-btn")?.RegisterCallback<ClickEvent>(_ => Debug.Log("About not yet implemented"));
+        // HelpOverlay lives on this same GameObject (added next to the UIDocument) and builds the modals.
+        root.Q<Button>("tutorial-btn")?.RegisterCallback<ClickEvent>(_ => HelpOverlay.Instance?.OpenTutorial());
+        root.Q<Button>("settings-btn")?.RegisterCallback<ClickEvent>(_ => HelpOverlay.Instance?.OpenSettings());
+        root.Q<Button>("about-btn")?.RegisterCallback<ClickEvent>(_ => HelpOverlay.Instance?.OpenAbout());
     }
 }

@@ -2,6 +2,24 @@
   "levelName": "Single Instruction",
   "sceneName": "FiveStage",
   "timeLimit": 60,
+  "tips": [
+    {
+      "title": "The pipeline",
+      "text": "Instructions travel through five stations: Fetch, Decode, Execute, Memory and Writeback."
+    },
+    {
+      "title": "Pick up a brick",
+      "text": "Grab the brick from the instruction spawner with E.",
+      "target": "start-platform",
+      "placement": "above"
+    },
+    {
+      "title": "Fetch",
+      "text": "Place the brick here first, then press T to advance the whole pipeline one step.",
+      "target": "fetch",
+      "placement": "above"
+    }
+  ],
   "instructions": [
     {
       "label": "addi x5, x0, 1",

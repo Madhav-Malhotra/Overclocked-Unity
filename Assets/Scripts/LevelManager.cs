@@ -142,6 +142,14 @@ public void LoadLevel(int index)
         OnLevelLoaded?.Invoke(currentLevelData.instructions);
     }
 
+    // Quit the running level without an end screen (Esc in a level). Stops the timer so it can't
+    // fire the end screen while the main menu is showing.
+    public void AbandonLevel()
+    {
+        levelActive = false;
+        SceneLoader.LoadMainMenu();
+    }
+
     public InstructionData[] GetCurrentLevelInstructions()
     {
         return currentLevelData?.instructions;

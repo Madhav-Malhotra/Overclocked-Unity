@@ -1,0 +1,266 @@
+/* ============================================================================
+   HelpOverlay.uss — tutorial / settings / about modals + level tip card.
+   Layers on top of the design system. The cyan "futuristic" accent for the help UI is
+   defined ONCE here (--help-accent); change it to retheme everything in this file.
+
+   TEXT SIZES follow the main menu (MainMenu.uxml): body/button text = 28px, nothing smaller;
+   the biggest heading (60px) matches the "Overclocked" title. Tune the scale in the block below.
+   ============================================================================ */
+
+.help-root {
+    position: absolute;
+    left: 0; top: 0; right: 0; bottom: 0;
+    --help-accent: #22D3EE;
+    --help-accent-soft: rgba(34, 211, 238, 0.14);
+    --help-accent-glow: rgba(34, 211, 238, 0.35);
+}
+
+/* ---------- Text scale (overrides the design system's small defaults) ---------- */
+.help-root .ds-body-1, .help-root .ds-body-2, .help-root .ds-caption { font-size: 28px; }
+.help-root .ds-h3 { font-size: 36px; }
+.help-root .ds-h2 { font-size: 44px; }
+.help-root .ds-h1 { font-size: 60px; }
+.help-root .ds-btn { font-size: 28px; height: 64px; padding-left: 28px; padding-right: 28px; }
+.help-root .ds-btn--sm { height: 56px; }
+.help-root .ds-btn--icon { width: 64px; padding-left: 0; padding-right: 0; }
+.help-root .ds-btn--icon .ds-icon { width: 32px; height: 32px; }
+.help-root .ds-search { height: 64px; }
+.help-root .ds-search__field, .help-root .ds-search__field .unity-base-text-field__input { font-size: 28px; }
+.help-root .ds-search__icon { width: 32px; height: 32px; }
+
+/* ---------- Scrim + modal shell ---------- */
+.help-scrim {
+    position: absolute;
+    left: 0; top: 0; right: 0; bottom: 0;
+    background-color: rgba(5, 8, 14, 0.82);
+    align-items: center;
+    justify-content: center;
+    display: none;
+}
+
+.help-modal {
+    width: 95%;
+    height: 92%;
+    padding: 0;
+    flex-direction: column;
+    border-color: var(--help-accent);
+    border-width: 2px;
+    flex-shrink: 0;   /* fixed size: content (e.g. a scrollbar appearing) must never resize the modal */
+    overflow: hidden;
+    display: none;
+}
+
+.help-modal--small {
+    width: 88%;
+    max-width: 1040px;
+    height: auto;
+    max-height: 92%;
+}
+
+.help-header {
+    flex-direction: row;
+    align-items: center;
+    padding: 20px 32px;
+    border-bottom-width: 1px;
+    border-bottom-color: var(--color-border);
+}
+
+.help-header__icon {
+    width: 48px; height: 48px;
+    margin-right: 20px;
+    -unity-background-image-tint-color: var(--help-accent);
+}
+
+.help-header__title {
+    flex-grow: 1;
+    font-size: 60px;
+    letter-spacing: 2px;
+}
+
+/* flex-basis 0: the body's height comes only from the space left between header and footer, never from the
+   (taller) pane content, so a scrollbar can't make it grow and push the footer/header around. */
+.help-body { flex-direction: row; flex-grow: 1; flex-shrink: 1; flex-basis: 0; min-height: 0; min-width: 0; }
+.help-header, .help-footer { flex-shrink: 0; }
+
+/* ---------- Left nav ---------- */
+.help-nav {
+    width: 440px;
+    flex-shrink: 0;
+    padding: 20px;
+    border-right-width: 1px;
+    border-right-color: var(--color-border);
+    background-color: rgba(11, 15, 23, 0.55);
+}
+
+.help-nav .ds-search.is-focused { border-color: var(--help-accent); }
+.help-nav__list { flex-grow: 1; flex-basis: 0; min-height: 0; margin-top: 16px; }
+
+.help-nav__category {
+    margin-top: 20px;
+    margin-bottom: 8px;
+    margin-left: 6px;
+    color: var(--help-accent);
+    font-size: 28px;
+    letter-spacing: 2px;
+    -unity-font-style: bold;
+}
+
+.help-nav-item {
+    flex-direction: row;
+    align-items: center;
+    height: 64px;
+    padding-left: 14px;
+    padding-right: 14px;
+    margin-bottom: 4px;
+    border-radius: 8px;
+    border-left-width: 4px;
+    border-left-color: rgba(0, 0, 0, 0);
+}
+.help-nav-item:hover { background-color: var(--color-surface-elev); }
+.help-nav-item.is-active {
+    background-color: var(--help-accent-soft);
+    border-left-color: var(--help-accent);
+}
+.help-nav-item__icon {
+    width: 32px; height: 32px;
+    margin-right: 14px;
+    flex-shrink: 0;
+    -unity-background-image-tint-color: var(--help-accent);
+}
+.help-nav-item__label { font-size: 28px; color: var(--color-text-primary); flex-shrink: 1; }
+
+.help-empty { color: var(--color-text-secondary); margin: 24px 8px; font-size: 28px; }
+
+/* ---------- Content pane ---------- */
+.help-content { flex-grow: 1; flex-shrink: 1; flex-basis: 0; min-width: 0; min-height: 0; padding: 32px 44px; }
+
+.help-footer {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 32px;
+    border-top-width: 1px;
+    border-top-color: var(--color-border);
+}
+
+/* ---------- Markdown ---------- */
+.help-md { padding-right: 20px; }
+.help-root .help-md__h1 { margin-bottom: 20px; color: var(--help-accent); font-size: 60px; }
+.help-root .help-md__h2 { margin-top: 28px; margin-bottom: 12px; font-size: 44px; }
+.help-root .help-md__h3 { margin-top: 20px; margin-bottom: 10px; color: var(--help-accent); font-size: 36px; }
+.help-md__p { margin-bottom: 16px; white-space: normal; }
+.help-md__li { flex-direction: row; margin-bottom: 10px; padding-left: 8px; }
+.help-md__marker { width: 40px; color: var(--help-accent); flex-shrink: 0; font-size: 28px; }
+.help-md__li-text { flex-shrink: 1; flex-grow: 1; white-space: normal; }
+.help-md__hr { height: 1px; background-color: var(--color-border); margin-top: 20px; margin-bottom: 20px; }
+.help-md__callout {
+    background-color: var(--help-accent-soft);
+    border-left-width: 4px;
+    border-left-color: var(--help-accent);
+    border-radius: 6px;
+    padding: 16px 22px;
+    margin-top: 6px;
+    margin-bottom: 20px;
+}
+.help-md__code {
+    background-color: var(--color-bg);
+    border-width: 1px;
+    border-color: var(--color-border);
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    color: var(--help-accent);
+    font-size: 28px;
+    white-space: pre;
+}
+.help-root .help-md__link { border-width: 2px; align-self: flex-start; margin-top: 8px; margin-bottom: 16px; border-color: var(--help-accent); color: var(--help-accent); }
+.help-md__image-wrap { align-items: flex-start; margin-top: 10px; margin-bottom: 22px; }
+.help-md__image {
+    border-width: 1px;
+    border-color: var(--color-border);
+    border-radius: 8px;
+    margin-bottom: 6px;
+}
+
+/* ---------- Settings / About ---------- */
+.help-modal__body { padding: 32px; }
+.help-setting-row {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 30px;
+}
+.help-setting-row > .ds-body-1 { width: 340px; }
+.help-setting-row > .ds-slider { flex-grow: 1; height: 48px; }
+
+/* ---------- Level tip card ---------- */
+.help-tip-layer {
+    position: absolute;
+    left: 0; top: 0; right: 0; bottom: 0;
+    display: none;
+}
+
+.help-tip-card {
+    position: absolute;
+    width: 560px;
+    padding: 24px 28px;
+    background-color: var(--color-surface);
+    border-width: 2px;
+    border-color: var(--help-accent);
+    border-radius: 14px;
+}
+.help-tip-card__step {
+    color: var(--help-accent);
+    font-size: 28px;
+    letter-spacing: 2px;
+    -unity-font-style: bold;
+    margin-bottom: 6px;
+}
+.help-tip-card__title { margin-bottom: 10px; }
+.help-tip-card__text { white-space: normal; margin-bottom: 20px; }
+.help-tip-card__head { flex-direction: row; justify-content: space-between; align-items: center; }
+.help-tip-card__actions { flex-direction: row; justify-content: flex-end; }
+.help-tip-card__actions > .ds-btn { margin-left: 10px; }
+
+.help-tip-ring {
+    position: absolute;
+    border-width: 4px;
+    border-color: var(--help-accent);
+    border-radius: 14px;
+    background-color: var(--help-accent-soft);
+    display: none;
+    transition-property: border-color, background-color;
+    transition-duration: 0.6s;
+    transition-timing-function: ease-in-out;
+}
+.help-tip-ring.is-pulsing { border-color: var(--help-accent-glow); background-color: rgba(34, 211, 238, 0.04); }
+
+/* ---------- Tips / Help (?) buttons in the HUD ---------- */
+/* Same dark blue pill colour as the timer/progress badges (ds-card--elevated). */
+.help-hud-buttons {
+    position: absolute;
+    right: 36px; top: 36px;
+    flex-direction: row;
+    align-items: center;
+}
+.help-hud-buttons > .help-hud-btn {
+    height: 64px;
+    margin: 0 0 0 14px;
+    padding: 0 30px;
+    border-width: 1px;
+    border-color: var(--color-border);
+    border-radius: 32px;
+    background-color: var(--color-surface-elev);
+    color: var(--color-text-primary);
+    font-size: 28px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+}
+.help-hud-buttons > .help-hud-btn:hover { background-color: var(--color-surface-hover); border-color: var(--help-accent); }
+/* The "?" is just a bold glyph in a perfectly round button. */
+.help-hud-buttons > .help-hud-btn--round {
+    width: 64px;
+    padding: 0;
+    font-size: 40px;
+    color: white;
+}

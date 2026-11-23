@@ -50,7 +50,7 @@
        disappears against our dark surface. Tie both to the text token
        so they always read against any input fill. */
     --unity-cursor-color: var(--color-text-primary);
-    --unity-selection-color: rgba(34, 197, 94, 0.35);
+    --unity-selection-color: rgba(34, 211, 238, 0.35);
 }
 
 .ds-input .unity-text-input:hover,
@@ -152,7 +152,7 @@
     /* Match the caret to the text token; Unity's default black caret
        is invisible against the dark search shell. */
     --unity-cursor-color: var(--color-text-primary);
-    --unity-selection-color: rgba(34, 197, 94, 0.35);
+    --unity-selection-color: rgba(34, 211, 238, 0.35);
 }
 
 /* Trailing clear button slot */
@@ -334,7 +334,7 @@
     white-space: normal;
     min-height: 96px;
     --unity-cursor-color: var(--color-text-primary);
-    --unity-selection-color: rgba(34, 197, 94, 0.35);
+    --unity-selection-color: rgba(34, 211, 238, 0.35);
 }
 .ds-textarea .unity-text-input:focus,
 .ds-textarea .unity-text-field__input:focus,
