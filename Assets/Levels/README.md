@@ -40,6 +40,11 @@ folder ships its own text assets at its root).
 3. Done. `LevelManager` picks up every `*.json` in `Resources/JSON/`
    automatically, ordered by filename, the next time the game runs.
 
+## Level tips (optional)
+
+A level can include a `tips` array for a step-by-step tooltip tour. See
+`Assets/UI/Help/README.md` for the field reference. `add_hex.py` preserves it.
+
 ## Requirements
 
 `add_hex.py` needs `riscv64-unknown-elf-as` and `riscv64-unknown-elf-objcopy`

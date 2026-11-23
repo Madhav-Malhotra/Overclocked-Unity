@@ -3687,6 +3687,8 @@ GameObject:
   - component: {fileID: 1231983178}
   - component: {fileID: 1231983177}
   - component: {fileID: 1231983176}
+  - component: {fileID: 1231983182}
+  - component: {fileID: 1231983181}
   m_Layer: 0
   m_Name: HUD
   m_TagString: Untagged
@@ -3774,6 +3776,34 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1231983181
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1231983175}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a542db6471471ac47a5a17c42b325b79, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LevelTipsController
+  uiDocument: {fileID: 0}
+  glowColor: {r: 0.13, g: 0.83, b: 0.93, a: 1}
+  glowIntensity: 1.2
+--- !u!114 &1231983182
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1231983175}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c30816d6012ed52428040925e819df77, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HelpOverlay
+  uiDocument: {fileID: 0}
 --- !u!1001 &1314395857
 PrefabInstance:
   m_ObjectHideFlags: 0

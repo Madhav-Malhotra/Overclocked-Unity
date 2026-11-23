@@ -8,15 +8,15 @@
 
 :root {
     /* ---------- Colors: Brand & Semantic ---------- */
-    --color-primary:        #22C55E;
-    --color-primary-hover:  #16A34A;
-    --color-primary-press:  #15803D;
-    --color-primary-soft:   rgba(34, 197, 94, 0.16);
+    --color-primary:        #22D3EE;
+    --color-primary-hover:  #06B6D4;
+    --color-primary-press:  #0891B2;
+    --color-primary-soft:   rgba(34, 211, 238, 0.16);
 
-    --color-secondary:       #3B82F6;
-    --color-secondary-hover: #2563EB;
-    --color-secondary-press: #1D4ED8;
-    --color-secondary-soft:  rgba(59, 130, 246, 0.16);
+    --color-secondary:       #E11D48;
+    --color-secondary-hover: #BE123C;
+    --color-secondary-press: #9F1239;
+    --color-secondary-soft:  rgba(225, 29, 72, 0.16);
 
     --color-tertiary:        #A855F7;
     --color-tertiary-hover:  #9333EA;

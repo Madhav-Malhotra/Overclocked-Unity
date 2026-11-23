@@ -2,6 +2,30 @@
   "levelName": "Blackbox Intro",
   "sceneName": "Blackbox",
   "timeLimit": 45,
+  "tips": [
+    {
+      "title": "Welcome",
+      "text": "Use W A S D to move around."
+    },
+    {
+      "title": "Instruction spawner",
+      "text": "This platform spawns instruction bricks. Stand next to it and press E to pick one up.",
+      "target": "start-platform",
+      "placement": "above"
+    },
+    {
+      "title": "The CPU",
+      "text": "Carry the brick here and press E to place it. It will process automatically.",
+      "target": "blackbox-cpu",
+      "placement": "above"
+    },
+    {
+      "title": "Deliver it",
+      "text": "Once processed, take the brick to the end platform. Press ? any time for help.",
+      "target": "end-platform",
+      "placement": "above"
+    }
+  ],
   "instructions": [
     {
       "label": "addi x5, x0, 1",

@@ -6,6 +6,8 @@ public static class SceneLoader
     const string MainMenuScene = "MainMenu";
     const string EndScreenScene = "EndScreen";
 
+    public static bool InMainMenu => SceneManager.GetActiveScene().name == MainMenuScene;
+
     public static void LoadMainMenu()
     {
         SceneManager.LoadScene(MainMenuScene);
