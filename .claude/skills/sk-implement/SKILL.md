@@ -11,7 +11,7 @@ When invoked, execute the four-phase loop below for every implementation task in
 
 ## Phase 1 — Plan
 
-Note: a short summary of the most important files in the project can be found in `.claude/status.md`
+Note: a short summary of the most important files in the project can be found in `.claude/status.md`. Recent history is in `changelog.md` at the project root — read ONLY its tail (`tail -n 60 changelog.md`), never the whole file, since it grows with every change.
 
 1. Gather context before writing anything:
    - Read every script the change will touch using plain `Read` (or `Unity_FindInFile` for searching).
@@ -82,6 +82,16 @@ When all planned changes are verified:
 4. Note any non-obvious follow-up work (e.g. "the new serialized field `stationId` needs to be set on each CPUStation prefab instance in the scene").
 5. Output a **[USER TEST REQUIRED]** block with explicit step-by-step instructions the user must follow in-game to verify the changes work correctly (e.g. "Enter Play Mode, pick up a brick, place it on the Fetch station, press T — expect no error panel"). Be specific about what to do and what to observe. This is the primary verification step — the user drives Play Mode, not Claude.
 6. IMPORTANT: update `.claude/status.md` WITH BRIEF REFERENCES TO KEY ARCHITECTURAL FILES to let future AI agents know where to look for important files. This file must be kept small so that AI agents don't waste tokens loading it.
+7. IMPORTANT: append an entry to `changelog.md` (project root) once the change is merged or its PR is open. Append with Bash `cat >> changelog.md <<'EOF' ... EOF` — never `Write` (it overwrites the file) and never read the whole file. Leave a blank line before the entry. Exact format, one entry per change set:
+
+   ```
+   {ISO 8601 UTC timestamp, e.g. 2026-11-26T21:42:21Z`}
+   {GitHub PR link}
+   {title, max 10 words}
+   - {max 4 short bullets, goal-oriented not granular, each pointing to specifics with a `filename.ext` reference}
+   ```
+
+   Bullets say what objective was achieved and where to look, not how (git history has the how). Entries are newest at the bottom.
 
 
 ---
