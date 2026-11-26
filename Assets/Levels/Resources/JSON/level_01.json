@@ -1,5 +1,6 @@
 {
-  "levelName": "Single Instruction",
+  "levelName": "One Instruction, Five Stages",
+  "blurb": "Open the box and walk one instruction through the five pipeline stages: Fetch, Decode, Execute, Memory and Writeback.",
   "sceneName": "FiveStage",
   "timeLimit": 60,
   "tips": [

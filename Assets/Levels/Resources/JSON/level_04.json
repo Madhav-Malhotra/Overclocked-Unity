@@ -1,5 +1,6 @@
 {
-  "levelName": "SuperscalarNoStall",
+  "levelName": "Two Instructions at Once",
+  "blurb": "Two instructions can now move through the pipeline side by side. Discover how a superscalar CPU finishes more work per tick.",
   "sceneName": "Superscalar",
   "cpuArchitecture": "Superscalar",
   "timeLimit": 180,

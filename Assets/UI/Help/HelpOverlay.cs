@@ -23,12 +23,16 @@ public class HelpOverlay : MonoBehaviour
 
     public VisualElement Root { get; private set; }
 
-    private VisualElement scrim, tutorialModal, settingsModal, aboutModal;
+    private VisualElement scrim, tutorialModal, settingsModal, aboutModal, levelsModal;
+    private ScrollView levelsList;
     private VisualElement searchWrap;
     private TextField searchField;
     private ScrollView topicList, topicContent;
     private Button tipsToggle;
     private Slider volumeSlider;
+    private VisualElement toastRoot;   // where Toast.Show puts alerts (the screen's styled "root")
+    private Button resetProgressBtn;
+    private bool resetArmed;
 
     private readonly Dictionary<string, VisualElement> navItems = new();
     private string currentTopicId;
@@ -84,6 +88,10 @@ public class HelpOverlay : MonoBehaviour
 
         // Host inside the screen's styled "root" element when there is one, so design-system fonts apply.
         VisualElement host = docRoot.Q("root") ?? docRoot;
+        toastRoot = host;
+        // Shared utilities (.clickable, .on-hover, .accent-*) first so this overlay's own sheet can override them.
+        var utilities = Resources.Load<StyleSheet>("UiUtilities");
+        if (utilities != null) host.styleSheets.Add(utilities);
         if (sheet != null) host.styleSheets.Add(sheet);
         tree.CloneTree(host);
         Root = host.Q("help-root");
@@ -92,6 +100,8 @@ public class HelpOverlay : MonoBehaviour
         tutorialModal = Root.Q("tutorial-modal");
         settingsModal = Root.Q("settings-modal");
         aboutModal = Root.Q("about-modal");
+        levelsModal = Root.Q("levels-modal");
+        levelsList = Root.Q<ScrollView>("levels-list");
         searchWrap = Root.Q("search-wrap");
         searchField = Root.Q<TextField>("search-field");
         topicList = Root.Q<ScrollView>("topic-list");
@@ -99,7 +109,7 @@ public class HelpOverlay : MonoBehaviour
         tipsToggle = Root.Q<Button>("tips-toggle");
         volumeSlider = Root.Q<Slider>("volume-slider");
 
-        foreach (string name in new[] { "tutorial-close", "tutorial-close-2", "settings-close", "settings-close-2", "about-close" })
+        foreach (string name in new[] { "tutorial-close", "tutorial-close-2", "settings-close", "settings-close-2", "about-close", "levels-close", "levels-close-2" })
             Root.Q<Button>(name)?.RegisterCallback<ClickEvent>(_ => CloseAll());
 
         // Click on the dimmed background (not a modal) closes.
@@ -127,11 +137,37 @@ public class HelpOverlay : MonoBehaviour
             GameSettings.ShowTips = !GameSettings.ShowTips;
             RefreshSettings();
         });
+        resetProgressBtn = Root.Q<Button>("reset-progress-btn");
+        resetProgressBtn.RegisterCallback<ClickEvent>(_ => OnResetProgressClicked());
+        Root.Q<Button>("open-save-btn").RegisterCallback<ClickEvent>(_ => Application.OpenURL("file://" + SaveManager.SaveFolder));
         RefreshSettings();
+    }
+
+    // Two-step: first click arms the button, a second click within 3s wipes saved progress.
+    void OnResetProgressClicked()
+    {
+        if (!resetArmed)
+        {
+            resetArmed = true;
+            resetProgressBtn.text = "Click again to confirm";
+            resetProgressBtn.schedule.Execute(DisarmReset).StartingIn(3000);
+            return;
+        }
+        SaveManager.ResetAll();
+        DisarmReset();
+        Toast.Show(toastRoot, "Progress reset", ToastKind.Success);
+    }
+
+    void DisarmReset()
+    {
+        resetArmed = false;
+        if (resetProgressBtn != null) resetProgressBtn.text = "Reset progress";
     }
 
     void RefreshSettings()
     {
+        resetArmed = false;
+        if (resetProgressBtn != null) resetProgressBtn.text = "Reset progress";
         volumeSlider.SetValueWithoutNotify(GameSettings.MasterVolume);
         bool on = GameSettings.ShowTips;
         tipsToggle.text = on ? "On" : "Off";
@@ -174,6 +210,87 @@ public class HelpOverlay : MonoBehaviour
         string body = asset != null ? TutorialLibrary.Parse("about", asset.text).body : "Add Assets/Resources/HelpContent/about.md";
         content.Add(MarkdownView.Build(body, null));
         ShowModal(aboutModal);
+    }
+
+    // Level picker (main menu Start). Level N is locked until level N-1 is completed.
+    // Editor only: hold Shift while clicking a locked level to open it anyway (for testing).
+    public void OpenLevels()
+    {
+        if (Root == null) return;
+        PauseGame();
+        levelsList.Clear();
+
+        LevelManager lm = LevelManager.Instance;
+        if (lm == null || lm.TotalLevelCount == 0)
+        {
+            var none = new Label("No levels found.");
+            none.AddToClassList("help-empty");
+            levelsList.Add(none);
+        }
+        else
+        {
+            for (int i = 0; i < lm.TotalLevelCount; i++) levelsList.Add(MakeLevelRow(lm, i));
+        }
+        ShowModal(levelsModal);
+    }
+
+    VisualElement MakeLevelRow(LevelManager lm, int index)
+    {
+        LevelData data = lm.GetLevelData(index);
+        bool unlocked = index == 0 || SaveManager.IsLevelCompleted(lm.GetLevelId(index - 1));
+
+        var row = new VisualElement();
+        row.AddToClassList("help-level");
+        row.AddToClassList("bordered");
+        row.AddToClassList("mb-md");
+        row.EnableInClassList("help-level--locked", !unlocked);
+        // Locked cards get no hover or pointer cursor: they aren't clickable.
+        row.EnableInClassList("clickable", unlocked);
+        row.EnableInClassList("on-hover", unlocked);
+
+        var num = new VisualElement();
+        num.AddToClassList("help-level__num");
+        var numLabel = new Label((index + 1).ToString());
+        numLabel.AddToClassList("ds-h3");
+        numLabel.AddToClassList("accent-primary");
+        num.Add(numLabel);
+        row.Add(num);
+
+        var text = new VisualElement();
+        text.AddToClassList("help-level__text");
+        var title = new Label(string.IsNullOrEmpty(data?.levelName) ? lm.GetLevelId(index) : data.levelName);
+        title.AddToClassList("ds-h3");
+        text.Add(title);
+        if (!string.IsNullOrEmpty(data?.blurb))
+        {
+            var blurb = new Label(data.blurb);
+            blurb.AddToClassList("ds-body-1");
+            blurb.AddToClassList("help-level__blurb");
+            text.Add(blurb);
+        }
+        row.Add(text);
+
+        if (!unlocked)
+        {
+            var lockIcon = new VisualElement();
+            lockIcon.AddToClassList("ds-icon");
+            lockIcon.AddToClassList("ds-icon--lock");
+            lockIcon.AddToClassList("accent-primary");
+            lockIcon.AddToClassList("help-level__lock");
+            row.Add(lockIcon);
+        }
+
+        row.RegisterCallback<ClickEvent>(_ =>
+        {
+            bool bypass = false;
+#if UNITY_EDITOR
+            bypass = Keyboard.current != null && Keyboard.current.shiftKey.isPressed;
+#endif
+            if (!unlocked && !bypass) return;
+            CloseAll(); // restores timeScale before the scene changes
+            SceneLoader.LoadGame(index);
+        });
+        return row;
     }
 
     public void CloseAll()
@@ -225,6 +342,8 @@ public class HelpOverlay : MonoBehaviour
     {
         var row = new VisualElement();
         row.AddToClassList("help-nav-item");
+        row.AddToClassList("clickable");
+        row.AddToClassList("on-hover");
 
         var icon = new VisualElement();
         icon.AddToClassList("ds-icon");
@@ -282,7 +401,7 @@ public class HelpOverlay : MonoBehaviour
     void ShowModal(VisualElement modal)
     {
         scrim.style.display = modal != null ? DisplayStyle.Flex : DisplayStyle.None;
-        foreach (var m in new[] { tutorialModal, settingsModal, aboutModal })
+        foreach (var m in new[] { tutorialModal, settingsModal, aboutModal, levelsModal })
             m.style.display = m == modal ? DisplayStyle.Flex : DisplayStyle.None;
     }
 

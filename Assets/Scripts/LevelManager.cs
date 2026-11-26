@@ -61,7 +61,10 @@ void Start()
     {
         SceneManager.sceneLoaded += OnSceneLoaded;
         FindPlayerReferences();
-        LoadLevel(LevelTransferData.NextLevelIndex);
+        // Don't start a level (and its countdown) while sitting in the main menu; the game scene's
+        // OnSceneLoaded below starts it once the player picks a level.
+        if (!SceneLoader.InMainMenu)
+            LoadLevel(LevelTransferData.NextLevelIndex);
     }
 
     void OnDestroy()
@@ -91,6 +94,21 @@ void Start()
 
         LevelData data = JsonUtility.FromJson<LevelData>(levelJsonFiles[index].text);
         return data?.sceneName;
+    }
+
+    // Stable save key for a level: its JSON file name (e.g. "level_01"). Index order can change when
+    // levels are added; the file name does not.
+    public string GetLevelId(int index)
+    {
+        if (levelJsonFiles == null || index < 0 || index >= levelJsonFiles.Length) return null;
+        return levelJsonFiles[index].name;
+    }
+
+    // Parses a level's JSON without touching any level-active state (used by the level selector).
+    public LevelData GetLevelData(int index)
+    {
+        if (levelJsonFiles == null || index < 0 || index >= levelJsonFiles.Length) return null;
+        return JsonUtility.FromJson<LevelData>(levelJsonFiles[index].text);
     }
 
     private void FindPlayerReferences()
@@ -192,13 +210,25 @@ private void OnLevelSuccess()
         levelActive = false;
         FreezePlayer();
         float timeTaken = currentLevelData.timeLimit - timeRemaining;
+        RecordResult(true, timeTaken);
         SceneLoader.LoadEndScreen(true, timeTaken, completedCount, totalCount, currentLevelIndex);
+    }
+
+    // Persists this attempt. Add new per-level stats here; best-of rules live in StatRule.
+    private void RecordResult(bool success, float timeTaken)
+    {
+        SaveManager.RecordLevelResult(SaveManager.LevelsMode, GetLevelId(currentLevelIndex), success,
+            ("timeTaken", timeTaken, StatRule.Min),
+            ("completedCount", completedCount, StatRule.Max),
+            ("totalCount", totalCount, StatRule.Max),
+            ("timeLimit", currentLevelData.timeLimit, StatRule.Max));
     }
 
 private void OnTimeLimitReached()
     {
         levelActive = false;
         FreezePlayer();
+        RecordResult(false, currentLevelData.timeLimit);
         SceneLoader.LoadEndScreen(false, 0f, completedCount, totalCount, currentLevelIndex);
     }
 

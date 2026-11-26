@@ -1,5 +1,6 @@
 {
-  "levelName": "Blackbox Intro",
+  "levelName": "Meet the CPU",
+  "blurb": "Meet the CPU as a single black box: feed it an instruction and watch it come out the other side. Learn the controls and how to deliver your first result.",
   "sceneName": "Blackbox",
   "timeLimit": 45,
   "tips": [

@@ -1,5 +1,6 @@
 {
-  "levelName": "Pipelined Instructions",
+  "levelName": "Keeping the Pipeline Full",
+  "blurb": "Keep several instructions in flight at once, each in a different stage. See how overlapping work makes the CPU faster.",
   "sceneName": "FiveStage",
   "timeLimit": 120,
   "instructions": [

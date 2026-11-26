@@ -18,6 +18,7 @@ public class LevelTipsController : MonoBehaviour
     private LevelTip[] tips = Array.Empty<LevelTip>();
     private int index = -1;       // tip on screen, -1 = tour closed
     private int resumeIndex;      // where the Tips button restarts
+    private string levelId;       // save key for the "tips seen" flag
 
     private VisualElement layer, ring, card;
     private Label stepLabel, titleLabel, textLabel;
@@ -59,8 +60,10 @@ public class LevelTipsController : MonoBehaviour
         ring.schedule.Execute(() => ring.ToggleInClassList("is-pulsing")).Every(600);
 
         tips = LevelManager.Instance?.CurrentLevelData?.tips ?? Array.Empty<LevelTip>();
+        levelId = LevelManager.Instance?.GetLevelId(LevelManager.Instance.CurrentLevelIndex);
         UpdateTipsButton();
-        if (tips.Length > 0 && GameSettings.ShowTips) StartTour();
+        // Auto-start only the first time a level is played; the Tips button replays it any time.
+        if (tips.Length > 0 && GameSettings.ShowTips && !SaveManager.HasLevelFlag(levelId, SaveManager.TipsSeenFlag)) StartTour();
     }
 
     // B / N = Back / Next while a tip is showing (and the help window isn't open).
@@ -89,6 +92,8 @@ public class LevelTipsController : MonoBehaviour
     public void EndTour(bool finished = false)
     {
         if (index >= 0) resumeIndex = finished ? 0 : index;
+        // Closing with X or finishing both count as seen, so the tour doesn't auto-start again.
+        if (index >= 0) SaveManager.SetLevelFlag(levelId, SaveManager.TipsSeenFlag);
         index = -1;
         layer.style.display = DisplayStyle.None;
         UpdateTipsButton();

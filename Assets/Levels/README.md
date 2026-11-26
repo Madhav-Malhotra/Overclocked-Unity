@@ -14,6 +14,7 @@ folder ships its own text assets at its root).
    ```json
    {
      "levelName": "Level 2",
+     "blurb": "One or two sentences on what this level teaches (shown in the level selector).",
      "timeLimit": 120,
      "instructions": [
        { "label": "add x1, x2, x3" },
@@ -39,6 +40,9 @@ folder ships its own text assets at its root).
 
 3. Done. `LevelManager` picks up every `*.json` in `Resources/JSON/`
    automatically, ordered by filename, the next time the game runs.
+
+**Save keys and unlocking:** a level's save ID is its file name (`level_02`), so don't rename
+files once playtesters have progress. Level N unlocks when level N-1 (previous filename) is completed.
 
 ## Level tips (optional)
 

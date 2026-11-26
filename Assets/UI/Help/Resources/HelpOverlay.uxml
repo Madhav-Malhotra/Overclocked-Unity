@@ -48,6 +48,22 @@
                 </ui:VisualElement>
             </ui:VisualElement>
 
+            <!-- Level select (opened by the main menu's Start button) -->
+            <ui:VisualElement name="levels-modal" class="ds-modal help-modal">
+                <ui:VisualElement class="help-header">
+                    <ui:VisualElement class="ds-icon ds-icon--list help-header__icon" />
+                    <ui:Label text="SELECT LEVEL" class="ds-h2 help-header__title" />
+                    <ui:Button name="levels-close" class="ds-btn ds-btn--icon ds-btn--ghost">
+                        <ui:VisualElement class="ds-icon ds-icon--close" />
+                    </ui:Button>
+                </ui:VisualElement>
+                <ui:ScrollView name="levels-list" class="help-level-list" horizontal-scroller-visibility="Hidden" vertical-scroller-visibility="AlwaysVisible" />
+                <ui:VisualElement class="help-footer">
+                    <ui:Label text="Finish a level to unlock the next. Press Esc to close." class="ds-caption" />
+                    <ui:Button name="levels-close-2" text="Close" class="ds-btn ds-btn--primary ds-btn--sm" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+
             <!-- Settings -->
             <ui:VisualElement name="settings-modal" class="ds-modal help-modal help-modal--small">
                 <ui:VisualElement class="help-header">
@@ -60,11 +76,19 @@
                 <ui:VisualElement class="help-modal__body">
                     <ui:VisualElement class="help-setting-row">
                         <ui:Label text="Master volume" class="ds-body-1" />
-                        <ui:Slider name="volume-slider" low-value="0" high-value="1" value="1" class="ds-slider ds-slider--filled" />
+                        <ui:Slider name="volume-slider" low-value="0" high-value="1" value="1" class="ds-slider ds-slider--filled slider-primary" />
                     </ui:VisualElement>
                     <ui:VisualElement class="help-setting-row">
                         <ui:Label text="Level tips" class="ds-body-1" />
                         <ui:Button name="tips-toggle" text="On" class="ds-btn ds-btn--secondary ds-btn--sm" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="help-setting-row">
+                        <ui:Label text="Progress" class="ds-body-1" />
+                        <ui:Button name="reset-progress-btn" text="Reset progress" class="ds-btn ds-btn--danger ds-btn--sm" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="help-setting-row">
+                        <ui:Label text="Save data" class="ds-body-1" />
+                        <ui:Button name="open-save-btn" text="Open save folder" class="ds-btn ds-btn--primary ds-btn--sm" />
                     </ui:VisualElement>
                     <ui:VisualElement class="ds-modal__actions" style="flex-direction: row; justify-content: flex-end;">
                         <ui:Button name="settings-close-2" text="Done" class="ds-btn ds-btn--primary ds-btn--sm" />
