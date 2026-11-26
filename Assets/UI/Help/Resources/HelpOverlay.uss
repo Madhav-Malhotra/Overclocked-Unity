@@ -116,7 +116,6 @@
     border-left-width: 4px;
     border-left-color: rgba(0, 0, 0, 0);
 }
-.help-nav-item:hover { background-color: var(--color-surface-elev); }
 .help-nav-item.is-active {
     background-color: var(--help-accent-soft);
     border-left-color: var(--help-accent);
@@ -264,3 +263,26 @@
     font-size: 40px;
     color: white;
 }
+
+/* ---------- Level select rows (levels-modal) ---------- */
+.help-level-list { flex-grow: 1; flex-shrink: 1; flex-basis: 0; min-height: 0; padding: 24px 32px; }
+
+/* Border, spacing and hover come from the utility classes (.bordered .mb-md .on-hover). The number and the
+   title are top-aligned (flex-start) so the number lines up with the title, not the middle of the blurb. */
+.help-level {
+    flex-direction: row;
+    align-items: flex-start;
+    padding: 18px 20px;
+}
+.help-level--locked { opacity: 0.5; }
+
+.help-level__num {
+    width: 64px;
+    flex-shrink: 0;
+    margin-right: 16px;
+    align-items: center;
+}
+.help-level__text { flex-grow: 1; flex-shrink: 1; }
+.help-level__text > .ds-h3 { color: var(--color-text-primary); }
+.help-level__blurb { color: var(--color-text-secondary); white-space: normal; margin-top: 6px; }
+.help-level__lock { width: 40px; height: 40px; flex-shrink: 0; margin-left: 20px; align-self: center; }

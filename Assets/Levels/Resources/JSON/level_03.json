@@ -1,5 +1,6 @@
 {
-  "levelName": "Stall",
+  "levelName": "When the Pipeline Waits",
+  "blurb": "An instruction needs a value that a load hasn't fetched yet. Learn why the pipeline has to stall and wait.",
   "sceneName": "FiveStage",
   "timeLimit": 150,
   "instructions": [

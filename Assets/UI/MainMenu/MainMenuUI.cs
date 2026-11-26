@@ -8,7 +8,8 @@ public class MainMenuUI : MonoBehaviour
     void Awake()
     {
         var root = uiDocument.rootVisualElement;
-        root.Q<Button>("start-btn")?.RegisterCallback<ClickEvent>(_ => SceneLoader.LoadGame(0));
+        // Start opens the level picker (levels lock until the previous one is completed).
+        root.Q<Button>("start-btn")?.RegisterCallback<ClickEvent>(_ => HelpOverlay.Instance?.OpenLevels());
         // HelpOverlay lives on this same GameObject (added next to the UIDocument) and builds the modals.
         root.Q<Button>("tutorial-btn")?.RegisterCallback<ClickEvent>(_ => HelpOverlay.Instance?.OpenTutorial());
         root.Q<Button>("settings-btn")?.RegisterCallback<ClickEvent>(_ => HelpOverlay.Instance?.OpenSettings());

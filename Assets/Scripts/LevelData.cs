@@ -26,6 +26,8 @@ public class LevelTip
 public class LevelData
 {
     public string levelName;
+    // Optional 1-2 sentence description shown under the title in the level selector.
+    public string blurb;
     // Optional. Levels with no tips (null/empty) show no tooltip tour.
     public LevelTip[] tips;
     public string sceneName;

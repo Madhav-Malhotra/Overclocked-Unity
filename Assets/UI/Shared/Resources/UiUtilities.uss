@@ -1,0 +1,73 @@
+/* ============================================================================
+   UiUtilities.uss — project-wide utility classes. Apply them to ANY element instead of writing
+   one-off hover / accent rules in a screen's own USS.
+
+     .clickable        marks a non-button element that handles clicks (cards, rows, icons).
+                       TODO: pointer-hand cursor is deferred (runtime USS cursors need a texture asset);
+                       when added, put ONE rule here on `.clickable, .ds-btn, .unity-button`.
+     .on-hover         dark-grey hover background (same as the tutorial sidebar items).
+     .accent-primary   text / icon tint = design-system primary (cyan).
+     .accent-secondary text / icon tint = design-system secondary (red).
+     .slider-primary   with .ds-slider: visible grey track + large cyan thumb.
+     .toast-overlay    positions/sizes the shared alert popup (built by Toast.cs).
+     .bordered         rounded 2px card border in the design-system border color.
+     .mb-md            16px space below (use on stacked cards/rows; USS has no flex gap).
+
+   Loaded by HelpOverlay (any screen that hosts it) and by <Style> in screens without it
+   (e.g. EndScreen.uxml). Colors come from DesignTokens.uss, so retheming the tokens retints these.
+   ============================================================================ */
+
+.bordered {
+    border-width: 2px;
+    border-color: var(--color-border);
+    border-radius: 12px;
+}
+.mb-md { margin-bottom: 16px; }
+
+.on-hover:hover {
+    background-color: var(--color-surface-elev);
+}
+
+/* ---------- Toast (see Toast.cs) ---------- */
+.toast-overlay {
+    position: absolute;
+    left: 36px;
+    bottom: 36px;
+}
+.ds-toast.toast-overlay .ds-toast__icon {
+    width: 36px; height: 36px;
+    -unity-background-image-tint-color: rgb(255, 255, 255);
+}
+.ds-toast.toast-overlay .ds-toast__message { font-size: 32px; color: rgb(255, 255, 255); }
+.ds-toast.toast-overlay.ds-toast--danger  { background-color: rgb(153, 27, 27); }
+.ds-toast.toast-overlay.ds-toast--success { background-color: rgb(14, 116, 144); }
+.ds-toast.toast-overlay.ds-toast--info    { background-color: var(--color-surface-elev); border-color: var(--color-border-strong); }
+
+/* ---------- Slider: add alongside .ds-slider for a visible track + big cyan thumb ----------
+   (the stock track is --color-surface-elev, which disappears on the dark modal background). */
+.ds-slider.slider-primary .unity-base-slider__tracker {
+    height: 12px;
+    border-radius: 6px;
+    background-color: var(--color-text-disabled);
+}
+.ds-slider.slider-primary .unity-base-slider__dragger {
+    width: 36px; height: 36px;
+    margin-top: -18px;
+    border-radius: 18px;
+    border-width: 3px;
+    border-color: var(--color-text-primary);
+    background-color: var(--color-primary);
+}
+.ds-slider.slider-primary .unity-base-slider__dragger:hover {
+    background-color: var(--color-primary-hover);
+    scale: 1.1 1.1;
+}
+
+.accent-primary {
+    color: var(--color-primary);
+    -unity-background-image-tint-color: var(--color-primary);
+}
+.accent-secondary {
+    color: var(--color-secondary);
+    -unity-background-image-tint-color: var(--color-secondary);
+}

@@ -65,6 +65,13 @@ game/gameplay world or a scene background through it (HUD, overlay, prompt) — 
 paints an opaque `--color-bg` background, which is right for a full menu/modal screen and wrong
 for transparent overlay chrome.
 
+## Shared utility classes (use these, don't write one-off rules)
+
+`Assets/UI/Shared/Resources/UiUtilities.uss` (loaded by `HelpOverlay`; add a `<Style>` tag in screens
+without it): `.on-hover` (dark-grey hover bg), `.bordered` (rounded card border), `.mb-md` (space below stacked cards), `.slider-primary` (with `.ds-slider`: visible track, big cyan thumb), and for alerts always call `Toast.Show(root, msg, ToastKind.Danger|Success|Info)` (`Assets/UI/Shared/Toast.cs`) instead of building a toast in UXML, `.accent-primary` / `.accent-secondary` (text/icon tint from
+the design tokens), `.clickable` (marks click targets; pointer cursor deferred). Compose them on elements,
+e.g. `class="help-level clickable on-hover"`, rather than adding per-screen `:hover`/color rules.
+
 ## Common components (most-used first)
 
 **Buttons** — `.ds-btn` base + one variant + optional size/modifier:

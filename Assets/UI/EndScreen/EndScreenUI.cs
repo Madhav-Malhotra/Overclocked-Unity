@@ -39,7 +39,18 @@ public class EndScreenUI : MonoBehaviour
         {
             int minutes = Mathf.FloorToInt(LevelTransferData.TimeTaken / 60f);
             int seconds = Mathf.FloorToInt(LevelTransferData.TimeTaken % 60f);
-            ShowSuccess($"Time: {minutes:00}:{seconds:00}");
+            string stat = $"Time: {minutes:00}:{seconds:00}";
+
+            // From the second attempt on, also show the player's best time for this level.
+            string levelId = LevelManager.Instance?.GetLevelId(LevelTransferData.NextLevelIndex);
+            double? best = SaveManager.GetBest(levelId, "timeTaken");
+            if (best.HasValue && SaveManager.GetAttempts(levelId) > 1)
+            {
+                int bestMin = Mathf.FloorToInt((float)best.Value / 60f);
+                int bestSec = Mathf.FloorToInt((float)best.Value % 60f);
+                stat += $"\nBest: {bestMin:00}:{bestSec:00}";
+            }
+            ShowSuccess(stat);
         }
         else
         {
