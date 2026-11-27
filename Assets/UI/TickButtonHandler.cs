@@ -62,6 +62,7 @@ public class TickButtonHandler : MonoBehaviour
             CaptureMonitorData(statesB);
             MarkRetiredWritebackBrick(statesB);
             cpuController.AdvanceTick();
+            AudioManager.Play("tick_ok");
         }
         else
         {

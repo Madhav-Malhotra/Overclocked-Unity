@@ -33,6 +33,8 @@ public static class Toast
         icon.EnableInClassList("ds-icon--check", kind == ToastKind.Success);
         icon.EnableInClassList("ds-icon--info", kind == ToastKind.Info);
 
+        AudioManager.Play(kind switch { ToastKind.Danger => "toast_error", ToastKind.Success => "toast_success", _ => "toast_info" });
+
         panel.Q<Label>("toast-message").text = message;
         panel.style.display = DisplayStyle.Flex;
         panel.BringToFront(); // above any modal scrim added after the toast was created

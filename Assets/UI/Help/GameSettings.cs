@@ -5,8 +5,12 @@ using UnityEngine;
 public static class GameSettings
 {
     const string VolumeKey = "settings.masterVolume";
+    const string MusicKey = "settings.musicVolume";
+    const string SfxKey = "settings.sfxVolume";
     const string TipsKey = "settings.showTips";
 
+    // Master scales everything via AudioListener; Music and SFX are extra gains applied by AudioManager
+    // (SFX covers gameplay sounds, UI sounds and the movement hum).
     public static float MasterVolume
     {
         get => PlayerPrefs.GetFloat(VolumeKey, 1f);
@@ -15,6 +19,22 @@ public static class GameSettings
             PlayerPrefs.SetFloat(VolumeKey, Mathf.Clamp01(value));
             ApplyAudio();
         }
+    }
+
+    public static float MusicVolume
+    {
+        get => PlayerPrefs.GetFloat(MusicKey, 1f);
+        set
+        {
+            PlayerPrefs.SetFloat(MusicKey, Mathf.Clamp01(value));
+            ApplyAudio();
+        }
+    }
+
+    public static float SfxVolume
+    {
+        get => PlayerPrefs.GetFloat(SfxKey, 1f);
+        set => PlayerPrefs.SetFloat(SfxKey, Mathf.Clamp01(value));
     }
 
     // When true, a level's tip tour starts automatically on level load.
@@ -27,6 +47,8 @@ public static class GameSettings
     public static void ResetToDefaults()
     {
         PlayerPrefs.DeleteKey(VolumeKey);
+        PlayerPrefs.DeleteKey(MusicKey);
+        PlayerPrefs.DeleteKey(SfxKey);
         PlayerPrefs.DeleteKey(TipsKey);
         ApplyAudio();
     }
@@ -34,6 +56,7 @@ public static class GameSettings
     public static void ApplyAudio()
     {
         AudioListener.volume = MasterVolume;
+        AudioManager.RefreshMusicVolume();
     }
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]

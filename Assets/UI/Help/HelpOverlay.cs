@@ -29,7 +29,7 @@ public class HelpOverlay : MonoBehaviour
     private TextField searchField;
     private ScrollView topicList, topicContent;
     private Button tipsToggle;
-    private Slider volumeSlider;
+    private Slider volumeSlider, musicSlider, sfxSlider;
     private VisualElement toastRoot;   // where Toast.Show puts alerts (the screen's styled "root")
     private Button resetProgressBtn;
     private bool resetArmed;
@@ -89,6 +89,7 @@ public class HelpOverlay : MonoBehaviour
         // Host inside the screen's styled "root" element when there is one, so design-system fonts apply.
         VisualElement host = docRoot.Q("root") ?? docRoot;
         toastRoot = host;
+        UiSounds.Attach(docRoot); // click/hover sounds for every button on this screen
         // Shared utilities (.clickable, .on-hover, .accent-*) first so this overlay's own sheet can override them.
         var utilities = Resources.Load<StyleSheet>("UiUtilities");
         if (utilities != null) host.styleSheets.Add(utilities);
@@ -108,6 +109,8 @@ public class HelpOverlay : MonoBehaviour
         topicContent = Root.Q<ScrollView>("topic-content");
         tipsToggle = Root.Q<Button>("tips-toggle");
         volumeSlider = Root.Q<Slider>("volume-slider");
+        musicSlider = Root.Q<Slider>("music-slider");
+        sfxSlider = Root.Q<Slider>("sfx-slider");
 
         foreach (string name in new[] { "tutorial-close", "tutorial-close-2", "settings-close", "settings-close-2", "about-close", "levels-close", "levels-close-2" })
             Root.Q<Button>(name)?.RegisterCallback<ClickEvent>(_ => CloseAll());
@@ -131,6 +134,8 @@ public class HelpOverlay : MonoBehaviour
     {
         volumeSlider.SetValueWithoutNotify(GameSettings.MasterVolume);
         volumeSlider.RegisterValueChangedCallback(e => GameSettings.MasterVolume = e.newValue);
+        musicSlider.RegisterValueChangedCallback(e => GameSettings.MusicVolume = e.newValue);
+        sfxSlider.RegisterValueChangedCallback(e => GameSettings.SfxVolume = e.newValue);
 
         tipsToggle.RegisterCallback<ClickEvent>(_ =>
         {
@@ -169,6 +174,8 @@ public class HelpOverlay : MonoBehaviour
         resetArmed = false;
         if (resetProgressBtn != null) resetProgressBtn.text = "Reset progress";
         volumeSlider.SetValueWithoutNotify(GameSettings.MasterVolume);
+        musicSlider.SetValueWithoutNotify(GameSettings.MusicVolume);
+        sfxSlider.SetValueWithoutNotify(GameSettings.SfxVolume);
         bool on = GameSettings.ShowTips;
         tipsToggle.text = on ? "On" : "Off";
         tipsToggle.EnableInClassList("ds-btn--primary", on);

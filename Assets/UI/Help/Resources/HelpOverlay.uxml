@@ -79,6 +79,14 @@
                         <ui:Slider name="volume-slider" low-value="0" high-value="1" value="1" class="ds-slider ds-slider--filled slider-primary" />
                     </ui:VisualElement>
                     <ui:VisualElement class="help-setting-row">
+                        <ui:Label text="Music volume" class="ds-body-1" />
+                        <ui:Slider name="music-slider" low-value="0" high-value="1" value="1" class="ds-slider ds-slider--filled slider-primary" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="help-setting-row">
+                        <ui:Label text="SFX volume" class="ds-body-1" />
+                        <ui:Slider name="sfx-slider" low-value="0" high-value="1" value="1" class="ds-slider ds-slider--filled slider-primary" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="help-setting-row">
                         <ui:Label text="Level tips" class="ds-body-1" />
                         <ui:Button name="tips-toggle" text="On" class="ds-btn ds-btn--secondary ds-btn--sm" />
                     </ui:VisualElement>
