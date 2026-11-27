@@ -117,3 +117,5 @@ git push origin feature/my-new-feature
 ## 🙏 Credits & Third-Party Assets
 
 The UI Toolkit design system used throughout the project's screens (`Assets/DesignSystem/`) is vendored from [sinanata/unity-ui-toolkit-design-system](https://github.com/sinanata/unity-ui-toolkit-design-system).
+
+UI and gameplay sound effects (`Assets/Audio/kenney_interface-sounds/`) are the "Interface Sounds" pack by [Kenney](https://www.kenney.nl), released under [CC0](http://creativecommons.org/publicdomain/zero/1.0/).

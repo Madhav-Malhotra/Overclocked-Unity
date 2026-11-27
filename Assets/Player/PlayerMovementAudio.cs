@@ -20,6 +20,7 @@ public class PlayerMovementAudio : MonoBehaviour
         _audioSource = GetComponent<AudioSource>();
         _controller = GetComponent<PlayerController>();
 
+        _audioSource.outputAudioMixerGroup = AudioManager.GroupFor(SoundBus.Sfx); // null until MainMixer exists
         _audioSource.clip = movementClip;
         _audioSource.loop = true;
         _audioSource.playOnAwake = false;
@@ -31,7 +32,7 @@ public class PlayerMovementAudio : MonoBehaviour
     private void Update()
     {
         bool isMoving = _controller.IsMoving;
-        float desiredVolume = isMoving ? targetVolume : 0f;
+        float desiredVolume = isMoving ? targetVolume * GameSettings.SfxVolume : 0f; // SFX slider scales the hum
         _audioSource.volume = Mathf.MoveTowards(_audioSource.volume, desiredVolume, fadeSpeed * Time.deltaTime);
     }
 }

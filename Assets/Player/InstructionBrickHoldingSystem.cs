@@ -54,6 +54,8 @@ public class InstructionBrickHoldingSystem : MonoBehaviour
 
         // Turn off highlight while held
         brick.SetHighlighted(false);
+
+        AudioManager.Play("brick_pickup");
     }
 
     // Overload for timer-based placement
@@ -102,6 +104,7 @@ public class InstructionBrickHoldingSystem : MonoBehaviour
 
         // Clear held brick
         heldBrick = null;
+        AudioManager.Play("brick_place");
         return true;
     }
 }

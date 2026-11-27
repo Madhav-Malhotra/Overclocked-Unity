@@ -20,6 +20,7 @@ public class EndScreenUI : MonoBehaviour
     void Awake()
     {
         var root = uiDocument.rootVisualElement;
+        UiSounds.Attach(root); // this scene has no HelpOverlay, so hook click/hover sounds here
 
         successPanel = root.Q<VisualElement>("success-panel");
         failurePanel = root.Q<VisualElement>("failure-panel");
@@ -67,6 +68,8 @@ public class EndScreenUI : MonoBehaviour
         successBackground?.SetActive(true);
         failureBackground?.SetActive(false);
 
+        AudioManager.Play("level_complete");
+
         bool hasNextLevel = LevelManager.Instance != null
             && LevelTransferData.NextLevelIndex + 1 < LevelManager.Instance.TotalLevelCount;
         SetDisplayed(nextLevelButton, hasNextLevel);
@@ -80,6 +83,7 @@ public class EndScreenUI : MonoBehaviour
         SetDisplayed(failurePanel, true);
         successBackground?.SetActive(false);
         failureBackground?.SetActive(true);
+        AudioManager.Play("level_fail");
     }
 
     private static void SetDisplayed(VisualElement element, bool visible)

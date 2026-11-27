@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Kenney sound previewer</title>
+<style>
+  body { font: 16px system-ui, sans-serif; background: #14161c; color: #e8eaf0; margin: 0; padding: 32px; }
+  h1 { font-size: 18px; font-weight: 600; margin: 0 0 20px; }
+  .row { display: flex; gap: 16px; align-items: end; }
+  label { display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: #9aa3b5; }
+  select { font-size: 18px; padding: 8px 12px; background: #20242e; color: #e8eaf0; border: 1px solid #3a4150; border-radius: 6px; min-width: 180px; }
+  input[type=number] { font-size: 18px; padding: 8px 12px; width: 110px; background: #20242e; color: #e8eaf0; border: 1px solid #3a4150; border-radius: 6px; }
+  button { font-size: 18px; padding: 8px 18px; background: #20242e; color: #e8eaf0; border: 1px solid #3a4150; border-radius: 6px; cursor: pointer; min-width: 110px; }
+  button:hover { background: #2a303c; }
+  #now { margin-top: 24px; font: 15px ui-monospace, monospace; color: #7dd3a8; }
+  #hint { margin-top: 8px; font-size: 13px; color: #9aa3b5; }
+  #pulse { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #3a4150; margin-right: 8px; }
+  #pulse.on { background: #7dd3a8; }
+</style>
+</head>
+<body>
+<h1>Kenney Interface Sounds – loop preview</h1>
+<div class="row">
+  <label>Family <select id="family"></select></label>
+  <label>Variant <select id="variant"></select></label>
+  <label>Pause between plays (s) <input id="gap" type="number" min="0" step="0.1" value="0.5"></label>
+  <button id="toggle" title="Space also toggles">⏸ Pause</button>
+</div>
+<div id="now"><span id="pulse"></span><span id="name">Pick a sound…</span></div>
+<div id="hint">Loops continuously with the chosen pause. Click a dropdown then use ↑/↓ to step through quickly. Space = play/pause.</div>
+<audio id="player"></audio>
+
+<script>
+const BASE = "Audio/"; // relative to this file, so it works on any machine
+const FAMILIES = {
+  back: [1,2,3,4], bong: [1], click: [1,2,3,4,5], close: [1,2,3,4], confirmation: [1,2,3,4],
+  drop: [1,2,3,4], error: [1,2,3,4,5,6,7,8], glass: [1,2,3,4,5,6], glitch: [1,2,3,4],
+  maximize: [1,2,3,4,5,6,7,8,9], minimize: [1,2,3,4,5,6,7,8,9], open: [1,2,3,4], pluck: [1,2],
+  question: [1,2,3,4], scratch: [1,2,3,4,5], scroll: [1,2,3,4,5], select: [1,2,3,4,5,6,7,8],
+  switch: [1,2,3,4,5,6,7], tick: [1,2,4], toggle: [1,2,3,4]
+};
+
+const fam = document.getElementById("family");
+const vari = document.getElementById("variant");
+const player = document.getElementById("player");
+const nameEl = document.getElementById("name");
+const pulse = document.getElementById("pulse");
+const gapInput = document.getElementById("gap");
+const toggle = document.getElementById("toggle");
+let timer = null;
+let playing = true; // on by default
+
+const gapMs = () => Math.max(0, parseFloat(gapInput.value) || 0) * 1000;
+
+const pad = n => String(n).padStart(3, "0");
+
+for (const f of Object.keys(FAMILIES)) fam.add(new Option(`${f} (${FAMILIES[f].length})`, f));
+fam.selectedIndex = -1; // nothing chosen yet
+
+function fillVariants() {
+  vari.innerHTML = "";
+  for (const n of FAMILIES[fam.value]) vari.add(new Option(pad(n), n));
+}
+
+function stopAll() {
+  clearTimeout(timer);
+  player.pause();
+  pulse.classList.remove("on");
+}
+
+function playCurrent() {
+  stopAll();
+  if (fam.selectedIndex < 0) return;
+  const file = `${fam.value}_${pad(vari.value)}.ogg`;
+  nameEl.textContent = file;
+  if (!playing) return; // paused: just show the selection
+  player.src = BASE + file;
+  player.currentTime = 0;
+  pulse.classList.add("on");
+  player.play().catch(e => { nameEl.textContent = file + " – " + e.message; });
+}
+
+player.addEventListener("ended", () => {
+  pulse.classList.remove("on");
+  if (!playing) return;
+  timer = setTimeout(() => { pulse.classList.add("on"); player.currentTime = 0; player.play(); }, gapMs());
+});
+
+function setPlaying(on) {
+  playing = on;
+  toggle.textContent = on ? "⏸ Pause" : "▶ Play";
+  if (on) playCurrent(); else stopAll();
+}
+
+toggle.addEventListener("click", () => setPlaying(!playing));
+document.addEventListener("keydown", e => {
+  if (e.code === "Space" && !(e.target instanceof HTMLInputElement)) { e.preventDefault(); setPlaying(!playing); }
+});
+
+fam.addEventListener("change", () => { fillVariants(); playCurrent(); });
+vari.addEventListener("change", playCurrent);
+</script>
+</body>
+</html>
